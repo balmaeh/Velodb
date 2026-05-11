@@ -292,7 +292,7 @@ const STD_SETTINGS=[
 
 function newBike(o={}){
 return{id:uid(),status:‘aktiv’,marke:’’,modell:’’,typ:’’,jahr:’’,farbe:’’,groesse:’’,bezug:’’,preis:’’,federweg:’’,gewichtGewogen:’’,fotos:[],
-aktuelleProbleme:’’,bemerkungen:’’,
+aktuellerZustand:’’,bemerkungen:’’,
 components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
 settings:STD_SETTINGS.map(s=>({…s,isStandard:true,history:[]})),
 todos:[],…o};
@@ -342,6 +342,7 @@ localStorage.setItem(KEY,JSON.stringify(state));
 state.bikes.forEach(b=>{
 b.components.forEach(c=>{if(c.notVorhanden===undefined)c.notVorhanden=false;});
 b.fotos=b.fotos.map(f=>typeof f===‘string’?{data:f,datum:today()}:f);
+if(b.aktuelleProbleme!==undefined&&b.aktuellerZustand===undefined){b.aktuellerZustand=b.aktuelleProbleme;delete b.aktuelleProbleme;}
 });
 
 // ================================================================
@@ -507,7 +508,7 @@ function tabInfo(b){
 const fields=[{f:‘marke’,l:‘Marke’},{f:‘modell’,l:‘Modell’},{f:‘typ’,l:‘Typ’,ph:‘z.B. Enduro, Trail, XC…’},{f:‘jahr’,l:‘Modelljahr’},{f:‘farbe’,l:‘Farbe’},{f:‘groesse’,l:‘Grösse’,ph:‘z.B. L, XL, 19.5”…’},{f:‘federweg’,l:‘Federweg v/h (mm)’,ph:‘z.B. 160/150’},{f:‘gewichtGewogen’,l:‘Gewicht gewogen (g)’,ph:‘z.B. 15470’,type:‘number’},{f:‘bezug’,l:‘Bezug’,ph:‘Händler / Privat…’},{f:‘preis’,l:‘Kaufpreis (CHF)’}];
 return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div></div> <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px"> <div class="form-grid">${fields.map(({f,l,ph,type})=>`<div class="form-group"><label class="form-label">${l}</label><input class="form-input" type="${type||'text'}" value="${esc(b[f])}" data-field="${f}" data-label="${l}" placeholder="${ph||''}"></div>`).join(’’)}</div>
 <hr class="div">
-<div class="form-group"><label class="form-label">Aktuelle Probleme</label><textarea class="form-input" rows="2" data-field="aktuelleProbleme" data-label="Aktuelle Probleme" placeholder="z.B. Kratzen am Dämpfer…">${esc(b.aktuelleProbleme)}</textarea></div>
+<div class="form-group"><label class="form-label">Aktueller Zustand</label><textarea class="form-input" rows="2" data-field="aktuellerZustand" data-label="Aktueller Zustand" placeholder="z.B. Alles i.O., Schaltung hakelt…">${esc(b.aktuellerZustand)}</textarea></div>
 <div class="form-group"><label class="form-label">Bemerkungen</label><textarea class="form-input" rows="3" data-field="bemerkungen" data-label="Bemerkungen">${esc(b.bemerkungen)}</textarea></div>
 </div>
 
