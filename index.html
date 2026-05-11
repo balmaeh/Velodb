@@ -670,7 +670,7 @@ function openCompModal(fi){
     <div class="modal-body">
       <div class="checkbox-row" onclick="toggleNotVorhanden(${fi})">
         <input type="checkbox" id="nv-check" ${naChecked} onclick="event.stopPropagation();toggleNotVorhanden(${fi})">
-        <label for="nv-check">Nicht vorhanden (z.B. kein Dämpfer beim Hardtail)</label>
+        <label for="nv-check">Nicht vorhanden</label>
       </div>
       ${c.notVorhanden?`<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Diese Komponente ist als «nicht vorhanden» markiert.</div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Schliessen</button></div>`:
       `<div class="cur-val-box"><div class="cur-val-label">Aktueller Stand</div><div class="cur-val-main ${!h?'empty':''}">${h?esc(h.wert):'Noch nicht erfasst'}</div>${h?`<div class="cur-val-meta">${h.gewicht?`<span>⚖ ${esc(h.gewicht)} g</span>`:''} ${h.preis?`<span>💰 CHF ${esc(h.preis)}</span>`:''} ${h.datum?`<span>📅 ${fmtDate(h.datum)}</span>`:''}</div>`:''}</div>
