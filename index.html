@@ -291,7 +291,7 @@ const STD_SETTINGS=[
 
 function newBike(o={}){
   return{id:uid(),status:'aktiv',marke:'',modell:'',typ:'',jahr:'',farbe:'',groesse:'',bezug:'',preis:'',federweg:'',gewichtGewogen:'',fotos:[],
-    aktuelleProbleme:'',bemerkungen:'',
+    aktuellerZustand:'',bemerkungen:'',
     components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
     settings:STD_SETTINGS.map(s=>({...s,isStandard:true,history:[]})),
     todos:[],...o};
@@ -488,7 +488,7 @@ function tabInfo(b){
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px">
       <div class="form-grid">${fields.map(({f,l,ph,type})=>`<div class="form-group"><label class="form-label">${l}</label><input class="form-input" type="${type||'text'}" value="${esc(b[f])}" data-field="${f}" data-label="${l}" placeholder="${ph||''}"></div>`).join('')}</div>
       <hr class="div">
-      <div class="form-group"><label class="form-label">Aktuelle Probleme</label><textarea class="form-input" rows="2" data-field="aktuelleProbleme" data-label="Aktuelle Probleme" placeholder="z.B. Kratzen am Dämpfer…">${esc(b.aktuelleProbleme)}</textarea></div>
+      <div class="form-group"><label class="form-label">Aktuelle Probleme</label><textarea class="form-input" rows="2" data-field="aktuellerZustand" data-label="Aktueller Zustand" placeholder="z.B. Kratzen am Dämpfer…">${esc(b.aktueller Zustand)}</textarea></div>
       <div class="form-group"><label class="form-label">Bemerkungen</label><textarea class="form-input" rows="3" data-field="bemerkungen" data-label="Bemerkungen">${esc(b.bemerkungen)}</textarea></div>
     </div>
   </div>
