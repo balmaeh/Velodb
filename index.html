@@ -183,6 +183,24 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .photo-thumb{aspect-ratio:4/3;border-radius:6px;overflow:hidden;position:relative;background:var(--surface2)}
 .photo-thumb img{width:100%;height:100%;object-fit:cover}
 .photo-del{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,.75);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:10px;font-weight:600}
+.ss-dots{display:flex;gap:5px;justify-content:center;margin-top:6px}
+.ss-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .2s}
+.ss-dot.active{background:var(--accent)}
+.photo-date-badge{position:absolute;bottom:4px;left:4px;font-size:9px;color:#fff;background:rgba(0,0,0,.6);padding:1px 5px;border-radius:3px;cursor:pointer;user-select:none}
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:2000;align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox img{width:100vw;height:100vh;object-fit:contain;border-radius:4px}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:14px}
+.gal-thumb{aspect-ratio:4/3;border-radius:8px;overflow:hidden;position:relative;background:var(--surface2);cursor:zoom-in}
+.gal-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .2s}
+.gal-thumb:hover img{transform:scale(1.03)}
+.gal-label{position:absolute;bottom:0;left:0;right:0;padding:5px 7px 4px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:9px;color:#fff;font-weight:600;letter-spacing:.3px}
+.dual-range{position:relative;height:36px;display:flex;align-items:center;margin:10px 0 4px}
+.dual-range input[type=range]{position:absolute;width:100%;height:4px;background:transparent;-webkit-appearance:none;appearance:none;pointer-events:none;z-index:2;margin:0}
+.dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;pointer-events:all;border:2px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.dual-range input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;pointer-events:all;border:2px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.dual-range-track{position:absolute;height:4px;left:0;right:0;background:var(--border);border-radius:2px;z-index:0}
+.dual-range-fill{position:absolute;height:100%;background:var(--accent);border-radius:2px}
+.range-labels{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px}
 .back-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;transition:color .15s;user-select:none}
 .back-btn:hover{color:var(--text)}
 .empty-state{text-align:center;padding:55px 20px;color:var(--muted)}
@@ -245,6 +263,9 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
       <div class="nav-item" onclick="navigate('compare')" data-view="compare">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Vergleich
       </div>
+      <div class="nav-item" onclick="navigate('gallery')" data-view="gallery">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>Galerie
+      </div>
       <div class="nav-divider"></div>
       <div class="nav-label">Meine Bikes</div>
       <div id="bike-links"></div>
@@ -265,6 +286,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
   </nav>
   <main id="main"><div id="view"></div></main>
 </div>
+<div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt=""></div>
 <div id="save-banner">
   <h4>&#128190; Speichern?</h4>
   <p id="sb-info">Ein Feld wurde verändert.</p>
@@ -357,7 +379,7 @@ const STD_SETTINGS=[
 ];
 
 function newBike(o={}){
-  return{id:uid(),status:'aktiv',marke:'',modell:'',typ:'',jahr:'',farbe:'',groesse:'',bezug:'',preis:'',federweg:'',gewichtGewogen:'',fotos:[],
+  return{id:uid(),status:'aktiv',marke:'',modell:'',variante:'',typ:'',jahr:'',farbe:'',groesse:'',bezug:'',bezugsdatum:'',preis:'',listenpreis:'',federweg:'',gewichtGewogen:'',fotos:[],
     aktuellerZustand:'',bemerkungen:'',
     components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
     settings:STD_SETTINGS.map(s=>({...s,isStandard:true,history:[]})),
@@ -386,6 +408,65 @@ function lastPhotoForDate(b,datumStr){
   return typeof f==='string'?f:f.data;
 }
 function photoDate(f){return typeof f==='string'?null:f.datum;}
+function readExifDate(buf){
+  try{
+    const v=new DataView(buf);
+    if(v.getUint16(0)!==0xFFD8)return null;
+    let off=2;
+    while(off+4<=v.byteLength){
+      const marker=v.getUint16(off);
+      if(marker===0xFFE1){
+        if(v.getUint32(off+4)===0x45786966&&v.getUint16(off+8)===0){
+          const tiff=off+10;
+          const le=v.getUint16(tiff)===0x4949;
+          const u16=(o)=>v.getUint16(tiff+o,le);
+          const u32=(o)=>v.getUint32(tiff+o,le);
+          const ifd0=u32(4);const n0=u16(ifd0);
+          let exifPtr=null;
+          for(let i=0;i<n0;i++){const e=ifd0+2+i*12;if(u16(e)===0x8769){exifPtr=u32(e+8);break;}}
+          if(exifPtr!==null){
+            const ne=u16(exifPtr);
+            for(let i=0;i<ne;i++){
+              const e=exifPtr+2+i*12;
+              if(u16(e)===0x9003){
+                const vOff=u32(e+8);let s='';
+                for(let j=0;j<10;j++)s+=String.fromCharCode(v.getUint8(tiff+vOff+j));
+                if(/^\d{4}:\d{2}:\d{2}$/.test(s))return s.slice(0,4)+'-'+s.slice(5,7)+'-'+s.slice(8,10);
+              }
+            }
+          }
+        }
+      }
+      if(off+2>=v.byteLength)break;
+      const segLen=v.getUint16(off+2);
+      off+=2+segLen;
+    }
+  }catch(e){}
+  return null;
+}
+function photosForSnapshot(b,date,nextDate){
+  return b.fotos.filter(f=>{
+    const d=typeof f==='string'?null:f.datum;
+    if(!d)return false;
+    return d>=date&&(nextDate===null||d<nextDate);
+  }).map(f=>typeof f==='string'?f:f.data);
+}
+let _ssTimers=[],_ssRegistry={};
+function clearSlideshows(){_ssTimers.forEach(t=>clearInterval(t));_ssTimers=[];_ssRegistry={};}
+function initSlideshows(){
+  Object.entries(_ssRegistry).forEach(([id,ss])=>{
+    if(ss.fotos.length<2)return;
+    const t=setInterval(()=>{
+      const el=document.getElementById(id);if(!el){clearInterval(t);return;}
+      ss.idx=(ss.idx+1)%ss.fotos.length;
+      const img=el.querySelector('img');
+      const dots=el.querySelectorAll('.ss-dot');
+      if(img){img.style.opacity='0';setTimeout(()=>{img.src=ss.fotos[ss.idx];img.style.opacity='1';},200);}
+      dots.forEach((d,i)=>d.classList.toggle('active',i===ss.idx));
+    },5000);
+    _ssTimers.push(t);
+  });
+}
 function compGroupOrder(comps){const seen=new Set(),o=[];comps.forEach(c=>{if(!seen.has(c.group)){seen.add(c.group);o.push(c.group);}});return o}
 function setGroupOrder(sets){const seen=new Set(),o=[];sets.forEach(s=>{const g=s.group||'Sonstige';if(!seen.has(g)){seen.add(g);o.push(g);}});return o}
 
@@ -411,6 +492,9 @@ state.bikes.forEach(b=>{
   b.fotos=(b.fotos||[]).map(f=>typeof f==='string'?{data:f,datum:today()}:f);
   if(b.aktuelleProbleme!==undefined&&b.aktuellerZustand===undefined){b.aktuellerZustand=b.aktuelleProbleme;delete b.aktuelleProbleme;}
   if(!b.geometry)b.geometry=[];
+  if(b.variante===undefined)b.variante='';
+  if(b.bezugsdatum===undefined)b.bezugsdatum='';
+  if(b.listenpreis===undefined)b.listenpreis='';
   ensureBikeGeo(b);
 });
 
@@ -556,12 +640,36 @@ function deleteGeoField(defId){
 }
 
 // ---- Add field ----
+function allCompNames(){
+  const names=new Set();
+  state.bikes.forEach(b=>b.components.forEach(c=>{if(c.name)names.add(c.name);}));
+  return[...names].sort((a,b)=>a.localeCompare(b,'de'));
+}
 function addCompField(group){
-  const label=prompt('Name des neuen Feldes:');if(!label||!label.trim())return;
+  const suggestions=allCompNames().map(n=>`<option value="${esc(n)}">`).join('');
+  showModal('addcomp-modal',`
+    <div class="modal-header"><div><div class="modal-sub">${esc(group)}</div><div class="modal-title">Neues Feld</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('addcomp-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="addcomp-group" value="${esc(group)}">
+      <div class="form-group"><label class="form-label">Feldname</label>
+        <input class="form-input" id="addcomp-name" list="addcomp-list" placeholder="z.B. Gabel, Kassette, Bremsbeläge vorne..." autocomplete="off" onkeydown="if(event.key==='Enter')confirmAddCompField()">
+        <datalist id="addcomp-list">${suggestions}</datalist>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addcomp-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="confirmAddCompField()">Hinzufügen</button>
+    </div>`);
+  setTimeout(()=>{const el=document.getElementById('addcomp-name');if(el)el.focus();},50);
+}
+function confirmAddCompField(){
+  const group=vv('addcomp-group');
+  const label=vv('addcomp-name').trim();
+  if(!label){showToast('Bitte einen Namen eingeben');return;}
   const g=COMP_GROUPS.find(g=>g.group===group);if(!g)return;
-  g.items.push(label.trim());
-  state.bikes.forEach(b=>{b.components.push({group,name:label.trim(),history:[],notVorhanden:false});});
-  markDirty('Felder');switchTab('komponenten');
+  g.items.push(label);
+  state.bikes.forEach(b=>{b.components.push({group,name:label,history:[],notVorhanden:false});});
+  markDirty('Felder');closeModal('addcomp-modal');switchTab('komponenten');
 }
 function addSetField(){
   const label=prompt('Name des neuen Feldes:');if(!label||!label.trim())return;
@@ -599,12 +707,15 @@ function buildBikeLinks(){
 // RENDER
 // ================================================================
 function render(){
+  clearSlideshows();
   const el=document.getElementById('view');
   if(view==='overview')el.innerHTML=renderOverview();
   else if(view==='bike')el.innerHTML=renderDetail();
   else if(view==='compare')el.innerHTML=renderCompare();
   else if(view==='personal')el.innerHTML=renderPersonal();
+  else if(view==='gallery')el.innerHTML=renderGallery();
   attachListeners();
+  initSlideshows();
 }
 
 function renderOverview(){
@@ -642,9 +753,11 @@ function renderDetail(){
   <div class="content" id="tab-content">${renderTab(b)}</div>`;
 }
 function switchTab(t){
+  clearSlideshows();
   tab=t;const b=getBike(bikeId);
   document.querySelectorAll('.detail-tab').forEach((el,i)=>el.classList.toggle('active',['info','komponenten','einstellungen','geometrie','todos'][i]===t));
   const tc=document.getElementById('tab-content');if(tc){tc.innerHTML=renderTab(b);attachListeners();}
+  initSlideshows();
 }
 function renderTab(b){
   if(tab==='info')return tabInfo(b);
@@ -656,10 +769,32 @@ function renderTab(b){
 }
 
 function tabInfo(b){
-  const fields=[{f:'marke',l:'Marke'},{f:'modell',l:'Modell'},{f:'typ',l:'Typ',ph:'z.B. Enduro, Trail, XC...'},{f:'jahr',l:'Modelljahr'},{f:'farbe',l:'Farbe'},{f:'groesse',l:'Grösse',ph:'z.B. L, XL, 19.5"...'},{f:'federweg',l:'Federweg v/h (mm)',ph:'z.B. 160/150'},{f:'gewichtGewogen',l:'Gewicht gewogen (g)',ph:'z.B. 15470',type:'number'},{f:'bezug',l:'Bezug',ph:'Händler / Privat...'},{f:'preis',l:'Kaufpreis (CHF)'}];
+  const totalCompG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
+  const fields=[
+    {f:'marke',      l:'Marke',                            cols:1},
+    {f:'modell',     l:'Modell',                           cols:2},
+    {f:'variante',   l:'Variante',                         cols:2},
+    {f:'typ',        l:'Typ',         ph:'z.B. Enduro, Trail, XC...', cols:1},
+    {f:'jahr',       l:'Modelljahr',  ph:'JJJJ',           cols:1},
+    {f:'farbe',      l:'Farbe',                            cols:2},
+    {f:'gewichtGewogen', l:'Gewicht gewogen (g)', type:'number', ph:'z.B. 15470', cols:1},
+    null, // Gewicht berechnet placeholder
+    {f:'bezug',      l:'Bezugsquelle', ph:'Händler / Online...', cols:2},
+    {f:'bezugsdatum',l:'Bezugsdatum',  type:'date',        cols:1},
+    {f:'preis',      l:'Kaufpreis (CHF)', type:'number',   cols:1},
+    {f:'listenpreis',l:'Listenpreis (CHF)', type:'number', cols:1},
+  ];
+  const fieldsHtml=fields.map(fd=>{
+    if(fd===null)return`<div class="form-group" style="grid-column:span 1"><label class="form-label">Gewicht berechnet (g)</label><input class="form-input" readonly tabindex="-1" value="${totalCompG>0?totalCompG:''}" placeholder="—" style="color:var(--muted);cursor:default"></div>`;
+    return`<div class="form-group" style="grid-column:span ${fd.cols||1}"><label class="form-label">${fd.l}</label><input class="form-input" type="${fd.type||'text'}" value="${esc(b[fd.f]||'')}" data-field="${fd.f}" data-label="${fd.l}" placeholder="${fd.ph||''}"></div>`;
+  }).join('');
+  window._bikeSrcs=(b.fotos||[]).map(f=>typeof f==='string'?f:f.data);
+  const fotosHtml=b.fotos&&b.fotos.length
+    ?`<div class="photo-grid">${b.fotos.map((f,i)=>{const src=window._bikeSrcs[i];return`<div class="photo-thumb"><img src="${src}" style="cursor:zoom-in" onclick="openLightbox(window._bikeSrcs[${i}])"><div class="photo-date-badge" onclick="editPhotoDate(${i})" title="Datum bearbeiten">${(typeof f==='string'?'':f.datum)||'–'} ✎</div><div class="photo-del" onclick="delPhoto(${i})">✕</div></div>`;}).join('')}</div>`
+    :`<div class="photo-upload-area" onclick="document.getElementById('file-photo').click()">Fotos hinzufügen</div>`;
   return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px">
-      <div class="form-grid">${fields.map(({f,l,ph,type})=>`<div class="form-group"><label class="form-label">${l}</label><input class="form-input" type="${type||'text'}" value="${esc(b[f])}" data-field="${f}" data-label="${l}" placeholder="${ph||''}"></div>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:13px">${fieldsHtml}</div>
       <hr class="div">
       <div class="form-group"><label class="form-label">Aktueller Zustand</label><textarea class="form-input" rows="2" data-field="aktuellerZustand" data-label="Aktueller Zustand" placeholder="z.B. Alles i.O., Schaltung hakelt...">${esc(b.aktuellerZustand)}</textarea></div>
       <div class="form-group"><label class="form-label">Bemerkungen</label><textarea class="form-input" rows="3" data-field="bemerkungen" data-label="Bemerkungen">${esc(b.bemerkungen)}</textarea></div>
@@ -667,7 +802,7 @@ function tabInfo(b){
   </div>
   <div class="section"><div class="section-header"><div class="section-title">Fotos</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-photo').click()">+ Foto</button></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px">
-      ${b.fotos&&b.fotos.length?`<div class="photo-grid">${b.fotos.map((f,i)=>`<div class="photo-thumb"><img src="${typeof f==='string'?f:f.data}"><div style="position:absolute;bottom:4px;left:4px;font-size:9px;color:#fff;background:rgba(0,0,0,.6);padding:1px 5px;border-radius:3px">${typeof f==='string'?'':f.datum||''}</div><div class="photo-del" onclick="delPhoto(${i})">✕</div></div>`).join('')}</div>`:`<div class="photo-upload-area" onclick="document.getElementById('file-photo').click()">Fotos hinzufügen</div>`}
+      ${fotosHtml}
       <div style="margin-top:11px"><button class="btn btn-secondary btn-sm" onclick="exportCsv('${b.id}')">📄 CSV Export</button></div>
     </div>
   </div>`;
@@ -1249,25 +1384,132 @@ function savePersonal(){const ed=document.getElementById('personal-editor');if(e
 function handlePhotos(e){
   const files=Array.from(e.target.files);if(!files.length||!bikeId)return;
   const b=getBike(bikeId);
-  // Suggest date of last component/setting change
-  const allDates=[];
-  b.components.forEach(c=>c.history.forEach(h=>{if(h.datum)allDates.push(h.datum);}));
-  b.settings.forEach(s=>s.history.forEach(h=>{if(h.datum)allDates.push(h.datum);}));
-  allDates.sort();
-  const suggestedDate=allDates.length?allDates[allDates.length-1]:today();
-  const datumInput=prompt('Aufnahmedatum des Fotos (JJJJ-MM-TT):',suggestedDate);
-  if(datumInput===null)return; // cancelled
-  const datum=datumInput.trim()||suggestedDate;
-  files.forEach(file=>{const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{
-    const c=document.createElement('canvas');let w=img.width,h=img.height,max=1200;
-    if(w>max){h=h*(max/w);w=max;}if(h>max){w=w*(max/h);h=max;}
-    c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-    b.fotos.push({data:c.toDataURL('image/jpeg',.72),datum});
-    markDirty('Fotos');if(tab==='info')switchTab('info');
-    if(tab==='zeitstrahl')switchTab('zeitstrahl');
-  };img.src=ev.target.result;};r.readAsDataURL(file);});e.target.value='';
+  let pending=files.length;
+  files.forEach(file=>{
+    const r=new FileReader();
+    r.onload=ev=>{
+      const buf=ev.target.result;
+      const exifDate=readExifDate(buf);
+      const lmDate=new Date(file.lastModified).toISOString().slice(0,10);
+      const datum=exifDate||lmDate;
+      const blob=new Blob([buf],{type:file.type||'image/jpeg'});
+      const url=URL.createObjectURL(blob);
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');let w=img.width,h=img.height,max=1200;
+        if(w>max){h=h*(max/w);w=max;}if(h>max){w=w*(max/h);h=max;}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        b.fotos.push({data:c.toDataURL('image/jpeg',.72),datum});
+        URL.revokeObjectURL(url);
+        pending--;
+        if(pending===0){
+          markDirty('Fotos');
+          if(tab==='info')switchTab('info');
+          if(tab==='zeitstrahl')switchTab('zeitstrahl');
+          showToast(`${files.length} Foto${files.length>1?'s':''} hinzugefügt${exifDate?' (Datum aus EXIF)':' (Datum aus Datei)'}`);
+        }
+      };
+      img.onerror=()=>{pending--;URL.revokeObjectURL(url);};
+      img.src=url;
+    };
+    r.readAsArrayBuffer(file);
+  });
+  e.target.value='';
 }
 function delPhoto(i){getBike(bikeId).fotos.splice(i,1);markDirty('Fotos');if(tab==='zeitstrahl')switchTab('zeitstrahl');else switchTab('info');}
+function editPhotoDate(i){
+  const b=getBike(bikeId);const f=b.fotos[i];
+  const cur=typeof f==='string'?today():(f.datum||today());
+  showModal('epd-modal',`
+    <div class="modal-header"><div><div class="modal-title">Foto-Datum</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('epd-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="epd-idx" value="${i}">
+      <div class="form-group"><label class="form-label">Aufnahmedatum</label><input class="form-input" type="date" id="epd-date" value="${cur}"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('epd-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="savePhotoDate()">Speichern</button>
+    </div>`);
+}
+function savePhotoDate(){
+  const i=parseInt(vv('epd-idx'));const datum=vv('epd-date');if(!datum)return;
+  const b=getBike(bikeId);const f=b.fotos[i];
+  if(typeof f==='string')b.fotos[i]={data:f,datum};else f.datum=datum;
+  markDirty('Fotos');closeModal('epd-modal');switchTab('info');
+}
+
+function openLightbox(src){
+  const lb=document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src=src;
+  lb.style.display='flex';
+}
+function closeLightbox(){document.getElementById('lightbox').style.display='none';}
+
+// ================================================================
+// GALERIE
+// ================================================================
+let galDayMin=0,galDayMax=0;
+function dateToDay(s){return s?Math.floor(new Date(s).getTime()/86400000):0;}
+function dayToDate(d){return new Date(d*86400000).toISOString().slice(0,10);}
+function getGalleryPhotos(){
+  const photos=[];
+  state.bikes.forEach(b=>{
+    b.fotos.forEach(f=>{
+      const src=typeof f==='string'?f:f.data;
+      const datum=typeof f==='string'?null:f.datum;
+      photos.push({src,datum,label:b.marke+' '+b.modell});
+    });
+  });
+  photos.sort((a,b)=>(b.datum||'')>(a.datum||'')?1:(b.datum||'')<(a.datum||'')?-1:0);
+  return photos;
+}
+function buildGalleryGrid(){
+  const photos=getGalleryPhotos();
+  const from=dayToDate(galDayMin),to=dayToDate(galDayMax);
+  const filtered=photos.filter(p=>p.datum&&p.datum>=from&&p.datum<=to);
+  if(!filtered.length)return`<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Keine Fotos im gewählten Zeitraum.</div>`;
+  window._galSrcs=filtered.map(p=>p.src);
+  return`<div class="gal-grid">${filtered.map((p,i)=>`<div class="gal-thumb" onclick="openLightbox(window._galSrcs[${i}])"><img src="${p.src}" loading="lazy"><div class="gal-label">${esc(p.label)}${p.datum?'<br><span style="font-weight:400;opacity:.8">'+fmtDate(p.datum)+'</span>':''}</div></div>`).join('')}</div>`;
+}
+function updateGalRange(){
+  const s1=document.getElementById('gal-r1'),s2=document.getElementById('gal-r2');
+  if(!s1||!s2)return;
+  let v1=parseInt(s1.value),v2=parseInt(s2.value);
+  if(v1>v2){const tmp=v1;v1=v2;v2=tmp;}
+  galDayMin=v1;galDayMax=v2;
+  const pct1=(v1-parseInt(s1.min))/(parseInt(s1.max)-parseInt(s1.min))*100;
+  const pct2=(v2-parseInt(s1.min))/(parseInt(s1.max)-parseInt(s1.min))*100;
+  const fill=document.getElementById('gal-fill');
+  if(fill){fill.style.left=pct1+'%';fill.style.width=(pct2-pct1)+'%';}
+  const lMin=document.getElementById('gal-lmin'),lMax=document.getElementById('gal-lmax');
+  if(lMin)lMin.textContent=fmtDate(dayToDate(v1));
+  if(lMax)lMax.textContent=fmtDate(dayToDate(v2));
+  const grid=document.getElementById('gal-grid');
+  if(grid)grid.innerHTML=buildGalleryGrid();
+}
+function renderGallery(){
+  const photos=getGalleryPhotos();
+  const dated=photos.filter(p=>p.datum);
+  if(!dated.length)return`<div class="topbar"><div class="topbar-title">Galerie</div></div><div class="content"><div class="empty-state"><h3>Keine Fotos</h3><p>Füge Fotos mit Datum zu deinen Bikes hinzu.</p></div></div>`;
+  const days=dated.map(p=>dateToDay(p.datum));
+  const dMin=Math.min(...days),dMax=Math.max(...days);
+  if(galDayMin===0&&galDayMax===0){galDayMin=dMin;galDayMax=dMax;}
+  galDayMin=Math.max(galDayMin,dMin);galDayMax=Math.min(galDayMax,dMax);
+  const pct1=(galDayMin-dMin)/(dMax-dMin||1)*100;
+  const pct2=(galDayMax-dMin)/(dMax-dMin||1)*100;
+  return`<div class="topbar"><div class="topbar-title">Galerie</div></div>
+  <div class="content">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:16px">
+      <div class="dual-range">
+        <div class="dual-range-track"><div class="dual-range-fill" id="gal-fill" style="left:${pct1}%;width:${pct2-pct1}%"></div></div>
+        <input type="range" id="gal-r1" min="${dMin}" max="${dMax}" value="${galDayMin}" oninput="updateGalRange()">
+        <input type="range" id="gal-r2" min="${dMin}" max="${dMax}" value="${galDayMax}" oninput="updateGalRange()">
+      </div>
+      <div class="range-labels"><span id="gal-lmin">${fmtDate(dayToDate(galDayMin))}</span><span id="gal-lmax">${fmtDate(dayToDate(galDayMax))}</span></div>
+    </div>
+    <div id="gal-grid">${buildGalleryGrid()}</div>
+  </div>`;
+}
 
 function buildZeitstrahlHtml(b){
   // Collect all dates with real changes
@@ -1326,9 +1568,11 @@ function buildZeitstrahlHtml(b){
 
   // Render snapshots newest first
   const html=dates.slice().reverse().map((d,ri)=>{
-    const prevDate=dates[dates.length-1-ri-1]||null;
+    const origIdx=dates.length-1-ri;
+    const prevDate=origIdx>0?dates[origIdx-1]:null;
+    const nextDate=origIdx<dates.length-1?dates[origIdx+1]:null;
     const changes=changesAtDate(d,prevDate);
-    const foto=lastPhotoForDate(b,d);
+    const fotoArr=photosForSnapshot(b,d,nextDate);
     const {compState,setState}=stateAtDate(d);
 
     // group changes
@@ -1336,6 +1580,12 @@ function buildZeitstrahlHtml(b){
     const setChanges=changes.filter(c=>c.type==='set');
 
     const uid3='z'+Math.random().toString(36).slice(2);
+    const ssId='ss'+Math.random().toString(36).slice(2);
+    if(fotoArr.length)_ssRegistry[ssId]={fotos:fotoArr,idx:0};
+    const fotoHtml=fotoArr.length?`<div id="${ssId}" style="margin-bottom:10px">
+      <img src="${fotoArr[0]}" style="width:100%;max-width:320px;height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--border);transition:opacity .2s">
+      ${fotoArr.length>1?`<div class="ss-dots">${fotoArr.map((_,i)=>`<span class="ss-dot${i===0?' active':''}"></span>`).join('')}</div>`:''}
+    </div>`:'';
 
     return`<div style="display:flex;gap:14px;margin-bottom:22px">
       <div style="display:flex;flex-direction:column;align-items:center;gap:0">
@@ -1344,7 +1594,7 @@ function buildZeitstrahlHtml(b){
       </div>
       <div style="flex:1;padding-bottom:8px">
         <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:8px">${fmtDate(d)}</div>
-        ${foto?`<img src="${foto}" style="width:100%;max-width:320px;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid var(--border)">`:'' }
+        ${fotoHtml}
         ${changes.length===0?`<div style="font-size:12px;color:var(--muted);font-style:italic">Foto hinzugefügt</div>`:`
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px">
           ${compChanges.length?`<div style="padding:7px 12px;background:var(--surface2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Komponenten</div>
