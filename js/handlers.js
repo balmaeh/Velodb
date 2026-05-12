@@ -339,9 +339,6 @@ function showModal(id, html) {
   ov.className = 'modal-overlay';
   ov.id = id + '_ov';
   ov.innerHTML = `<div class="modal">${html}</div>`;
-  ov.addEventListener('click', e => {
-    if (e.target === ov) closeModal(id);
-  });
   document.body.appendChild(ov);
 }
 
@@ -415,6 +412,8 @@ function openCompModal(fi) {
   const c = b.components[fi];
   if (!c) return;
   const h = cur(c.history);
+  const todayEntry = c.history.find(e => e.datum === today());
+  const fill = todayEntry || {};
   const naChecked = c.notVorhanden ? 'checked' : '';
   showModal(
     'comp-modal',
@@ -431,15 +430,15 @@ function openCompModal(fi) {
           : `<div class="cur-val-box"><div class="cur-val-label">Aktueller Stand</div><div class="cur-val-main ${!h ? 'empty' : ''}">${h ? esc(h.wert) : 'Noch nicht erfasst'}</div>${h ? `<div class="cur-val-meta">${h.gewicht ? `<span>⚖ ${esc(h.gewicht)} g</span>` : ''} ${h.preis ? `<span>💰 CHF ${esc(h.preis)}</span>` : ''} ${h.datum ? `<span>📅 ${fmtDate(h.datum)}</span>` : ''}</div>` : ''}</div>
       <hr class="div" style="margin-top:0">
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div>
-      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="cd" value="${today()}"></div>
-      <div class="form-group"><label class="form-label">Bezeichnung</label><textarea class="form-input" id="cw" rows="2" placeholder="z.B. Fox 38 Factory, 160mm...">${h ? esc(h.wert) : ''}</textarea></div>
+      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="cd" value="${today()}" oninput="checkCompDate(${fi})" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('cw').focus()}"></div>
+      <div class="form-group"><label class="form-label">Bezeichnung</label><textarea class="form-input" id="cw" rows="2" placeholder="z.B. Fox 38 Factory, 160mm...">${esc(fill.wert || (h ? h.wert : ''))}</textarea></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-group"><label class="form-label">Gewicht (g)</label><input class="form-input" type="number" id="cg" placeholder="z.B. 2180"></div>
-        <div class="form-group"><label class="form-label">Preis (CHF)</label><input class="form-input" type="number" id="cp" placeholder="z.B. 350"></div>
+        <div class="form-group"><label class="form-label">Gewicht (g)</label><input class="form-input" type="number" id="cg" placeholder="z.B. 2180" value="${esc(fill.gewicht || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('cp').focus()}"></div>
+        <div class="form-group"><label class="form-label">Preis (CHF)</label><input class="form-input" type="number" id="cp" placeholder="z.B. 350" value="${esc(fill.preis || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('cn').focus()}"></div>
       </div>
-      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="cn" placeholder="Optionale Bemerkung..."></div>
-      ${histSection(c.history, false)}
-      </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveComp(${fi})">Eintrag hinzufügen</button></div>`
+      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="cn" placeholder="Optionale Bemerkung..." value="${esc(fill.notiz || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();saveComp(${fi})}"></div>
+      ${histSection(c.history, false, `deleteCompHistory(${fi},__IDX__)`)}
+      </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Abbrechen</button><button id="comp-edit-btn" class="btn btn-warning btn-sm" style="display:${todayEntry ? '' : 'none'}" onclick="updateComp(${fi})">Bearbeiten</button><button class="btn btn-primary" onclick="saveComp(${fi})">Eintrag hinzufügen</button></div>`
       }
     `
   );
@@ -468,6 +467,37 @@ function saveComp(fi) {
   switchTab('komponenten');
 }
 
+function checkCompDate(fi) {
+  const c = getBike(bikeId).components[fi];
+  const entry = c.history.find(e => e.datum === vv('cd'));
+  const btn = document.getElementById('comp-edit-btn');
+  if (btn) btn.style.display = entry ? '' : 'none';
+}
+
+function updateComp(fi) {
+  const b = getBike(bikeId);
+  const c = b.components[fi];
+  if (!vv('cw').trim()) { showToast('Bitte Bezeichnung eingeben'); return; }
+  const entry = c.history.find(e => e.datum === vv('cd'));
+  if (!entry) { showToast('Kein Eintrag für dieses Datum'); return; }
+  entry.wert = vv('cw');
+  entry.gewicht = vv('cg');
+  entry.preis = vv('cp');
+  entry.notiz = vv('cn');
+  markDirty(c.name);
+  closeModal('comp-modal');
+  switchTab('komponenten');
+}
+
+function deleteCompHistory(fi, idx) {
+  if (!confirm('Eintrag löschen?')) return;
+  getBike(bikeId).components[fi].history.splice(idx, 1);
+  markDirty('Komponente');
+  closeModal('comp-modal');
+  openCompModal(fi);
+  switchTab('komponenten');
+}
+
 // ================================================================
 // SETTING MODAL
 // ================================================================
@@ -477,6 +507,8 @@ function openSetModal(si) {
   const s = b.settings[si];
   if (!s) return;
   const h = cur(s.history);
+  const todayEntry = s.history.find(e => e.datum === today());
+  const fill = todayEntry || {};
   const compRef = getCompRefHtml(b, s.label);
   showModal(
     'set-modal',
@@ -487,12 +519,12 @@ function openSetModal(si) {
       ${compRef}
       <hr class="div" style="margin-top:0">
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div>
-      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="sd" value="${today()}"></div>
-      <div class="form-group"><label class="form-label">Wert${s.unit ? ` (${esc(s.unit)})` : ''}</label><input class="form-input" id="sw" placeholder="Wert eingeben..."></div>
-      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="sn" placeholder="Optionale Bemerkung..."></div>
-      ${histSection(s.history, true)}
+      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="sd" value="${today()}" oninput="checkSetDate(${si})" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('sw').focus()}"></div>
+      <div class="form-group"><label class="form-label">Wert${s.unit ? ` (${esc(s.unit)})` : ''}</label><input class="form-input" id="sw" placeholder="Wert eingeben..." value="${esc(fill.wert || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('sn').focus()}"></div>
+      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="sn" placeholder="Optionale Bemerkung..." value="${esc(fill.notiz || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();saveSetting(${si})}"></div>
+      ${histSection(s.history, true, `deleteSetHistory(${si},__IDX__)`)}
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('set-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveSetting(${si})">Speichern</button></div>`
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('set-modal')">Abbrechen</button><button id="set-edit-btn" class="btn btn-warning btn-sm" style="display:${todayEntry ? '' : 'none'}" onclick="updateSetting(${si})">Bearbeiten</button><button class="btn btn-primary" onclick="saveSetting(${si})">Speichern</button></div>`
   );
 }
 
@@ -510,6 +542,35 @@ function saveSetting(si) {
   switchTab('einstellungen');
 }
 
+function checkSetDate(si) {
+  const s = getBike(bikeId).settings[si];
+  const entry = s.history.find(e => e.datum === vv('sd'));
+  const btn = document.getElementById('set-edit-btn');
+  if (btn) btn.style.display = entry ? '' : 'none';
+}
+
+function updateSetting(si) {
+  const b = getBike(bikeId);
+  const s = b.settings[si];
+  if (!vv('sw').trim()) { showToast('Bitte Wert eingeben'); return; }
+  const entry = s.history.find(e => e.datum === vv('sd'));
+  if (!entry) { showToast('Kein Eintrag für dieses Datum'); return; }
+  entry.wert = vv('sw');
+  entry.notiz = vv('sn');
+  markDirty(s.label);
+  closeModal('set-modal');
+  switchTab('einstellungen');
+}
+
+function deleteSetHistory(si, idx) {
+  if (!confirm('Eintrag löschen?')) return;
+  getBike(bikeId).settings[si].history.splice(idx, 1);
+  markDirty('Einstellung');
+  closeModal('set-modal');
+  openSetModal(si);
+  switchTab('einstellungen');
+}
+
 // ================================================================
 // GEOMETRY MODAL
 // ================================================================
@@ -521,6 +582,8 @@ function openGeoModal(gi) {
   const def = state.geoDefs.find(d => d.id === geo.defId);
   if (!def) return;
   const h = cur(geo.history);
+  const todayEntry = geo.history.find(e => e.datum === today());
+  const fill = todayEntry || {};
   showModal(
     'geo-modal',
     `
@@ -529,12 +592,12 @@ function openGeoModal(gi) {
       <div class="cur-val-box"><div class="cur-val-label">Aktueller Wert</div><div class="cur-val-main ${!h ? 'empty' : ''}" style="${h ? 'font-family:DM Mono,monospace;font-size:24px;font-weight:600' : ''}">${h ? esc(h.wert) + (def.unit ? ' ' + def.unit : '') : 'Noch nicht erfasst'}</div>${h ? `<div class="cur-val-meta">${h.datum ? `<span>📅 ${fmtDate(h.datum)}</span>` : ''} ${h.notiz ? `<span>📝 ${esc(h.notiz)}</span>` : ''}</div>` : ''}</div>
       <hr class="div" style="margin-top:0">
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div>
-      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="gd" value="${today()}"></div>
-      <div class="form-group"><label class="form-label">Wert${def.unit ? ` (${esc(def.unit)})` : ''}</label><input class="form-input" id="gw" placeholder="Wert eingeben..."></div>
-      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="gn" placeholder="z.B. Low Position, Flip-Chip..."></div>
-      ${histSection(geo.history, false)}
+      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="gd" value="${today()}" oninput="checkGeoDate(${gi})" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('gw').focus()}"></div>
+      <div class="form-group"><label class="form-label">Wert${def.unit ? ` (${esc(def.unit)})` : ''}</label><input class="form-input" id="gw" placeholder="Wert eingeben..." value="${esc(fill.wert || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('gn').focus()}"></div>
+      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="gn" placeholder="z.B. Low Position, Flip-Chip..." value="${esc(fill.notiz || '')}" onkeydown="if(event.key==='Enter'){event.preventDefault();saveGeo(${gi})}"></div>
+      ${histSection(geo.history, false, `deleteGeoHistory(${gi},__IDX__)`)}
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('geo-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveGeo(${gi})">Speichern</button></div>`
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('geo-modal')">Abbrechen</button><button id="geo-edit-btn" class="btn btn-warning btn-sm" style="display:${todayEntry ? '' : 'none'}" onclick="updateGeo(${gi})">Bearbeiten</button><button class="btn btn-primary" onclick="saveGeo(${gi})">Speichern</button></div>`
   );
 }
 
@@ -549,6 +612,36 @@ function saveGeo(gi) {
   const def = state.geoDefs.find(d => d.id === geo.defId);
   markDirty(def ? def.label : 'Geometrie');
   closeModal('geo-modal');
+  switchTab('geometrie');
+}
+
+function checkGeoDate(gi) {
+  const geo = getBike(bikeId).geometry[gi];
+  const entry = geo.history.find(e => e.datum === vv('gd'));
+  const btn = document.getElementById('geo-edit-btn');
+  if (btn) btn.style.display = entry ? '' : 'none';
+}
+
+function updateGeo(gi) {
+  const b = getBike(bikeId);
+  const geo = b.geometry[gi];
+  if (!vv('gw').trim()) { showToast('Bitte Wert eingeben'); return; }
+  const entry = geo.history.find(e => e.datum === vv('gd'));
+  if (!entry) { showToast('Kein Eintrag für dieses Datum'); return; }
+  entry.wert = vv('gw');
+  entry.notiz = vv('gn');
+  const def = state.geoDefs.find(d => d.id === geo.defId);
+  markDirty(def ? def.label : 'Geometrie');
+  closeModal('geo-modal');
+  switchTab('geometrie');
+}
+
+function deleteGeoHistory(gi, idx) {
+  if (!confirm('Eintrag löschen?')) return;
+  getBike(bikeId).geometry[gi].history.splice(idx, 1);
+  markDirty('Geometrie');
+  closeModal('geo-modal');
+  openGeoModal(gi);
   switchTab('geometrie');
 }
 
@@ -617,32 +710,41 @@ function delTodo(id, i) {
 // HISTORY & HELPER FUNCTIONS
 // ================================================================
 
-function makeHistHtml(entries, isSettings) {
+function makeHistHtml(entries, isSettings, delFn) {
   return [...entries]
     .reverse()
     .map((h, ri) => {
+      const origIdx = entries.length - 1 - ri;
       const snap = isSettings && h.kompSnapshot && Object.keys(h.kompSnapshot).length ? h.kompSnapshot : null;
       const snapHtml = snap
         ? Object.entries(snap)
             .map(([k, v]) => `<div class="hist-kompsnap"><div class="hist-kompsnap-label">${esc(k)}</div>${esc(v) || '—'}</div>`)
             .join('')
         : '';
+      const delBtn = delFn
+        ? `<button class="btn btn-ghost btn-sm" onclick="${delFn.replace('__IDX__', origIdx)}" style="padding:2px 5px;color:var(--muted);flex-shrink:0" title="Eintrag löschen">✕</button>`
+        : '';
       return `<div class="hist-entry ${ri === 0 ? 'current' : ''}">
-      <div class="hist-date">${fmtDate(h.datum) || 'Kein Datum'}</div>
-      <div class="hist-val">${esc(h.wert || '—')}</div>
-      <div class="hist-meta">${h.gewicht ? `<span>⚖ ${esc(h.gewicht)} g</span>` : ''} ${h.preis ? `<span>💰 CHF ${esc(h.preis)}</span>` : ''} ${h.notiz ? `<span>📝 ${esc(h.notiz)}</span>` : ''}</div>
-      ${snapHtml}
+      <div style="display:flex;align-items:flex-start;gap:4px">
+        <div style="flex:1">
+          <div class="hist-date">${fmtDate(h.datum) || 'Kein Datum'}</div>
+          <div class="hist-val">${esc(h.wert || '—')}</div>
+          <div class="hist-meta">${h.gewicht ? `<span>⚖ ${esc(h.gewicht)} g</span>` : ''} ${h.preis ? `<span>💰 CHF ${esc(h.preis)}</span>` : ''} ${h.notiz ? `<span>📝 ${esc(h.notiz)}</span>` : ''}</div>
+          ${snapHtml}
+        </div>
+        ${delBtn}
+      </div>
     </div>`;
     })
     .join('');
 }
 
-function histSection(entries, isSettings) {
+function histSection(entries, isSettings, delFn) {
   if (!entries || !entries.length) return '';
   const uid2 = 'h' + Math.random().toString(36).slice(2);
   return `<div class="hist-toggle" onclick="const c=document.getElementById('${uid2}');const o=c.style.display!=='none';c.style.display=o?'none':'block';this.querySelector('.hist-icon').style.transform=o?'rotate(0)':'rotate(90deg)'">
     <span class="hist-icon">▶</span>Historie (${entries.length} ${entries.length === 1 ? 'Eintrag' : 'Einträge'})</div>
-  <div id="${uid2}" style="display:none;padding-top:8px">${makeHistHtml(entries, isSettings)}</div>`;
+  <div id="${uid2}" style="display:none;padding-top:8px">${makeHistHtml(entries, isSettings, delFn)}</div>`;
 }
 
 function getCompRefHtml(b, settingLabel) {
