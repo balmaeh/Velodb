@@ -950,11 +950,22 @@ function importJson(e) {
       const d = JSON.parse(ev.target.result);
       if (!confirm('Alle Daten werden überschrieben?')) return;
       state = d;
+      // apply same migrations as initial load
+      ensureGeoDefs();
+      if (!state.infoDefs) state.infoDefs = DEFAULT_INFO_DEFS.map(def => ({ ...def }));
       state.bikes.forEach(b => {
-        b.components.forEach(c => {
-          if (c.notVorhanden === undefined) c.notVorhanden = false;
-        });
-        b.fotos = b.fotos.map(f => (typeof f === 'string' ? { data: f, datum: today() } : f));
+        b.components.forEach(c => { if (c.notVorhanden === undefined) c.notVorhanden = false; });
+        b.fotos = (b.fotos || []).map(f => typeof f === 'string' ? { data: f, datum: today() } : f);
+        if (b.aktuelleProbleme !== undefined && b.aktuellerZustand === undefined) { b.aktuellerZustand = b.aktuelleProbleme; delete b.aktuelleProbleme; }
+        if (!b.geometry) b.geometry = [];
+        if (b.variante === undefined) b.variante = '';
+        if (b.bezugsdatum === undefined) b.bezugsdatum = '';
+        if (b.listenpreis === undefined) b.listenpreis = '';
+        if (b.radgroesseV === undefined) b.radgroesseV = '';
+        if (b.radgroesseH === undefined) b.radgroesseH = '';
+        if (!b.infoVals) b.infoVals = {};
+        if (!b.todos) b.todos = [];
+        ensureBikeGeo(b);
       });
       saveState(false);
       buildBikeLinks();
