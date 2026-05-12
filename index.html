@@ -61,7 +61,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .hero-model{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1.1;margin:2px 0 8px}
 .hero-chips{display:flex;gap:7px;flex-wrap:wrap}
 .hero-chip{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
-.detail-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 26px;background:var(--surface);position:sticky;top:49px;z-index:80;overflow-x:auto}
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 26px;background:var(--surface);position:sticky;top:49px;z-index:80;overflow-x:auto;scrollbar-width:none}
+.detail-tabs::-webkit-scrollbar{display:none}
+[id^="snap-"]{scroll-margin-top:110px}
 .detail-tab{padding:12px 17px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .detail-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .detail-tab:hover:not(.active){color:var(--text)}
@@ -79,12 +81,18 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .group-title-row{display:flex;align-items:center;background:var(--surface2);border-bottom:1px solid var(--border)}
 .group-title-text{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:9px 12px 9px 0;flex:1}
 /* COMP ROWS */
-.comp-row{display:grid;grid-template-columns:28px 115px 1fr auto auto auto;align-items:center;gap:7px;padding:8px 13px 8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.comp-row{display:grid;grid-template-columns:115px 1fr auto auto auto;align-items:center;gap:7px;padding:8px 13px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
 .comp-row:hover{background:rgba(255,255,255,.03)}
 .comp-row:last-child{border-bottom:none}
 .comp-row.dnd-over{background:var(--accent-dim)!important}
 .comp-row.not-available{opacity:.45}
 .comp-name{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.info-row{display:grid;border-bottom:1px solid var(--border)}
+.info-cell{padding:7px 12px;cursor:pointer;transition:background .1s;min-width:0;overflow:hidden}
+.info-cell:hover{background:var(--surface2)}
+.info-lbl{font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.info-val{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info-val.empty{color:var(--muted);font-style:italic}
 .comp-val{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .comp-val.empty{color:var(--muted);font-style:italic}
 .comp-val.na{color:var(--muted);font-style:italic}
@@ -92,7 +100,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .hist-badge{font-size:10px;font-weight:600;background:var(--accent-dim);color:var(--accent);padding:2px 6px;border-radius:10px;white-space:nowrap}
 .na-badge{font-size:10px;font-weight:600;background:rgba(136,136,136,.15);color:var(--muted);padding:2px 7px;border-radius:10px;white-space:nowrap}
 /* SETTING ROWS */
-.setting-row{display:flex;align-items:center;padding:10px 13px 10px 0;border-bottom:1px solid var(--border);gap:7px;transition:background .1s}
+.setting-row{display:flex;align-items:center;padding:10px 13px;border-bottom:1px solid var(--border);gap:7px;transition:background .1s}
 .setting-row:last-child{border-bottom:none}
 .setting-row.dnd-over{background:var(--accent-dim)!important}
 .setting-label{font-size:11.5px;font-weight:600;color:var(--muted);min-width:155px;text-transform:uppercase;letter-spacing:.4px}
@@ -189,11 +197,15 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .photo-date-badge{position:absolute;bottom:4px;left:4px;font-size:9px;color:#fff;background:rgba(0,0,0,.6);padding:1px 5px;border-radius:3px;cursor:pointer;user-select:none}
 #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:2000;align-items:center;justify-content:center;cursor:zoom-out}
 #lightbox img{width:100vw;height:100vh;object-fit:contain;border-radius:4px}
-.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:14px}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:14px}
+.gal-item{display:flex;flex-direction:column;gap:5px}
 .gal-thumb{aspect-ratio:4/3;border-radius:8px;overflow:hidden;position:relative;background:var(--surface2);cursor:zoom-in}
 .gal-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .2s}
 .gal-thumb:hover img{transform:scale(1.03)}
-.gal-label{position:absolute;bottom:0;left:0;right:0;padding:5px 7px 4px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:9px;color:#fff;font-weight:600;letter-spacing:.3px}
+.gal-caption{font-size:11px;line-height:1.35;padding:0 2px}
+.gal-caption a{color:var(--text);font-weight:600;cursor:pointer;text-decoration:none}
+.gal-caption a:hover{color:var(--accent)}
+.gal-caption .gal-date{color:var(--muted);font-family:'DM Mono',monospace;font-size:10px}
 .dual-range{position:relative;height:36px;display:flex;align-items:center;margin:10px 0 4px}
 .dual-range input[type=range]{position:absolute;width:100%;height:4px;background:transparent;-webkit-appearance:none;appearance:none;pointer-events:none;z-index:2;margin:0}
 .dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;pointer-events:all;border:2px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.3)}
@@ -211,6 +223,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
 .edit-mode-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(232,97,26,.1);border:1px solid rgba(232,97,26,.3);border-radius:8px;margin-bottom:12px;font-size:12px;color:var(--accent)}
 .field-edit-row{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface)}
 .field-edit-row:last-child{border-bottom:none}
+.field-edit-row.dnd-over{background:var(--accent-dim)!important}
 .field-edit-input{background:var(--surface2);border:1px solid var(--accent);border-radius:5px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:4px 8px;outline:none;min-width:130px;flex:1}
 .field-edit-unit{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;padding:4px 8px;outline:none;width:70px}
 .field-edit-unit:focus{border-color:var(--accent)}
@@ -218,8 +231,9 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
 .edit-btn:hover{border-color:var(--accent);color:var(--accent)}
 .edit-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
 /* GEO */
-.geo-row{display:flex;align-items:center;padding:10px 13px 10px 0;border-bottom:1px solid var(--border);gap:7px;transition:background .1s}
+.geo-row{display:flex;align-items:center;padding:10px 13px;border-bottom:1px solid var(--border);gap:7px;transition:background .1s}
 .geo-row:last-child{border-bottom:none}
+.geo-row.dnd-over{background:var(--accent-dim)!important}
 .geo-label{font-size:11.5px;font-weight:600;color:var(--muted);min-width:155px;text-transform:uppercase;letter-spacing:.4px}
 .geo-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;flex:1;cursor:pointer}
 .geo-val.empty{font-family:'Barlow',sans-serif;color:var(--muted);font-size:12px;font-style:italic;font-weight:400}
@@ -241,7 +255,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
   .topbar{padding:10px 15px}
   .bike-hero{padding:13px 15px;gap:13px}
   .detail-tabs{padding:0 13px;top:47px}
-  .comp-row{grid-template-columns:28px 85px 1fr auto}
+  .comp-row{grid-template-columns:85px 1fr auto}
   .comp-num{display:none}
   #save-banner{left:12px;right:12px;bottom:65px;min-width:unset}
   .topbar-actions .btn-secondary{display:none}
@@ -379,7 +393,7 @@ const STD_SETTINGS=[
 ];
 
 function newBike(o={}){
-  return{id:uid(),status:'aktiv',marke:'',modell:'',variante:'',typ:'',jahr:'',farbe:'',groesse:'',bezug:'',bezugsdatum:'',preis:'',listenpreis:'',federweg:'',gewichtGewogen:'',fotos:[],
+  return{id:uid(),status:'aktiv',marke:'',modell:'',variante:'',typ:'',jahr:'',farbe:'',radgroesseV:'',radgroesseH:'',groesse:'',bezug:'',bezugsdatum:'',preis:'',listenpreis:'',federweg:'',gewichtGewogen:'',fotos:[],
     aktuellerZustand:'',bemerkungen:'',
     components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
     settings:STD_SETTINGS.map(s=>({...s,isStandard:true,history:[]})),
@@ -475,6 +489,7 @@ function setGroupOrder(sets){const seen=new Set(),o=[];sets.forEach(s=>{const g=
 // ================================================================
 let dndCompGrpNames=[];
 let dndSetGrpNames=[];
+let dndGeoGrpNames=[];
 
 // ================================================================
 // STATE
@@ -495,6 +510,8 @@ state.bikes.forEach(b=>{
   if(b.variante===undefined)b.variante='';
   if(b.bezugsdatum===undefined)b.bezugsdatum='';
   if(b.listenpreis===undefined)b.listenpreis='';
+  if(b.radgroesseV===undefined)b.radgroesseV='';
+  if(b.radgroesseH===undefined)b.radgroesseH='';
   ensureBikeGeo(b);
 });
 
@@ -577,6 +594,17 @@ function doReorder(type,from,to,grpIdx){
     const[item]=gc.splice(from,1);gc.splice(to,0,item);
     const gs=setGroupOrder(old);b.settings=gs.flatMap(g=>g===grpName?gc:old.filter(s=>(s.group||'Sonstige')===g));
     markDirty('Einstellungen');switchTab('einstellungen');
+  }else if(type==='geo-group'){
+    const gs=[...dndGeoGrpNames];const[g]=gs.splice(from,1);gs.splice(to,0,g);
+    const old=[...state.geoDefs];state.geoDefs=gs.flatMap(gn=>old.filter(d=>(d.group||'Geometrie')===gn));
+    markDirty('Geometrie');switchTab('geometrie');
+  }else if(type==='geo'){
+    const grpName=dndGeoGrpNames[grpIdx];if(!grpName)return;
+    const old=[...state.geoDefs];const gc=old.filter(d=>(d.group||'Geometrie')===grpName);
+    const[item]=gc.splice(from,1);gc.splice(to,0,item);
+    const gs=[...new Set(old.map(d=>d.group||'Geometrie'))];
+    state.geoDefs=gs.flatMap(g=>g===grpName?gc:old.filter(d=>(d.group||'Geometrie')===g));
+    markDirty('Geometrie');switchTab('geometrie');
   }
 }
 
@@ -716,6 +744,14 @@ function render(){
   else if(view==='gallery')el.innerHTML=renderGallery();
   attachListeners();
   initSlideshows();
+  if(_snapTarget&&view==='bike'&&tab==='komponenten'){
+    const zt=document.getElementById('zt-main');
+    const hdr=zt&&zt.previousElementSibling;
+    if(zt){zt.style.display='block';if(hdr)hdr.querySelector('.collapse-icon')?.classList.add('open');}
+    const target=document.getElementById('snap-'+_snapTarget);
+    if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),80);
+    _snapTarget=null;
+  }
 }
 
 function renderOverview(){
@@ -770,34 +806,43 @@ function renderTab(b){
 
 function tabInfo(b){
   const totalCompG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
-  const fields=[
-    {f:'marke',      l:'Marke',                            cols:1},
-    {f:'modell',     l:'Modell',                           cols:2},
-    {f:'variante',   l:'Variante',                         cols:2},
-    {f:'typ',        l:'Typ',         ph:'z.B. Enduro, Trail, XC...', cols:1},
-    {f:'jahr',       l:'Modelljahr',  ph:'JJJJ',           cols:1},
-    {f:'farbe',      l:'Farbe',                            cols:2},
-    {f:'gewichtGewogen', l:'Gewicht gewogen (g)', type:'number', ph:'z.B. 15470', cols:1},
-    null, // Gewicht berechnet placeholder
-    {f:'bezug',      l:'Bezugsquelle', ph:'Händler / Online...', cols:2},
-    {f:'bezugsdatum',l:'Bezugsdatum',  type:'date',        cols:1},
-    {f:'preis',      l:'Kaufpreis (CHF)', type:'number',   cols:1},
-    {f:'listenpreis',l:'Listenpreis (CHF)', type:'number', cols:1},
-  ];
-  const fieldsHtml=fields.map(fd=>{
-    if(fd===null)return`<div class="form-group" style="grid-column:span 1"><label class="form-label">Gewicht berechnet (g)</label><input class="form-input" readonly tabindex="-1" value="${totalCompG>0?totalCompG:''}" placeholder="—" style="color:var(--muted);cursor:default"></div>`;
-    return`<div class="form-group" style="grid-column:span ${fd.cols||1}"><label class="form-label">${fd.l}</label><input class="form-input" type="${fd.type||'text'}" value="${esc(b[fd.f]||'')}" data-field="${fd.f}" data-label="${fd.l}" placeholder="${fd.ph||''}"></div>`;
-  }).join('');
+  const ic=(l,v,fn)=>`<div class="info-cell" onclick="${fn}"><div class="info-lbl">${l}</div><div class="info-val${v?'':' empty'}">${v?esc(v):'—'}</div></div>`;
+  const rad=b.radgroesseV||b.radgroesseH?`${b.radgroesseV||'—'} / ${b.radgroesseH||'—'}`:'';
+  const gewG=b.gewichtGewogen?b.gewichtGewogen+'g':'';
+  const gewB=totalCompG>0?totalCompG+'g':'';
+  const gewDisp=gewG||gewB?`${gewG||'—'} / ${gewB||'—'}`:'';
   window._bikeSrcs=(b.fotos||[]).map(f=>typeof f==='string'?f:f.data);
   const fotosHtml=b.fotos&&b.fotos.length
     ?`<div class="photo-grid">${b.fotos.map((f,i)=>{const src=window._bikeSrcs[i];return`<div class="photo-thumb"><img src="${src}" style="cursor:zoom-in" onclick="openLightbox(window._bikeSrcs[${i}])"><div class="photo-date-badge" onclick="editPhotoDate(${i})" title="Datum bearbeiten">${(typeof f==='string'?'':f.datum)||'–'} ✎</div><div class="photo-del" onclick="delPhoto(${i})">✕</div></div>`;}).join('')}</div>`
     :`<div class="photo-upload-area" onclick="document.getElementById('file-photo').click()">Fotos hinzufügen</div>`;
   return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px">
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:13px">${fieldsHtml}</div>
-      <hr class="div">
-      <div class="form-group"><label class="form-label">Aktueller Zustand</label><textarea class="form-input" rows="2" data-field="aktuellerZustand" data-label="Aktueller Zustand" placeholder="z.B. Alles i.O., Schaltung hakelt...">${esc(b.aktuellerZustand)}</textarea></div>
-      <div class="form-group"><label class="form-label">Bemerkungen</label><textarea class="form-input" rows="3" data-field="bemerkungen" data-label="Bemerkungen">${esc(b.bemerkungen)}</textarea></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <div class="info-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        ${ic('Marke',b.marke,"openInfoEdit('marke','Marke')")}
+        ${ic('Modell',b.modell,"openInfoEdit('modell','Modell')")}
+        ${ic('Variante',b.variante,"openInfoEdit('variante','Variante')")}
+        ${ic('Modelljahr',b.jahr,"openInfoEdit('jahr','Modelljahr')")}
+      </div>
+      <div class="info-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        ${ic('Typ',b.typ,"openInfoEdit('typ','Typ')")}
+        ${ic('Farbe',b.farbe,"openInfoEdit('farbe','Farbe')")}
+        ${ic('Radgrösse v / h',rad,'openInfoRadgroesse()')}
+        ${ic('Gewicht gew. / ber.',gewDisp,'openInfoGewicht()')}
+      </div>
+      <div style="border-top:2px solid var(--border)"></div>
+      <div class="info-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        ${ic('Bezugsquelle',b.bezug,"openInfoEdit('bezug','Bezugsquelle')")}
+        ${ic('Bezugsdatum',b.bezugsdatum?fmtDate(b.bezugsdatum):'',"openInfoEdit('bezugsdatum','Bezugsdatum','date')")}
+        ${ic('Kaufpreis (CHF)',b.preis,"openInfoEdit('preis','Kaufpreis (CHF)','number')")}
+        ${ic('Listenpreis (CHF)',b.listenpreis,"openInfoEdit('listenpreis','Listenpreis (CHF)','number')")}
+      </div>
+      <div style="border-top:2px solid var(--border)"></div>
+      <div class="info-row" style="grid-template-columns:1fr">
+        ${ic('Aktueller Zustand',b.aktuellerZustand,"openInfoText('aktuellerZustand','Aktueller Zustand')")}
+      </div>
+      <div class="info-row" style="grid-template-columns:1fr;border-bottom:none">
+        ${ic('Bemerkungen',b.bemerkungen,"openInfoText('bemerkungen','Bemerkungen')")}
+      </div>
     </div>
   </div>
   <div class="section"><div class="section-header"><div class="section-title">Fotos</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-photo').click()">+ Foto</button></div>
@@ -824,20 +869,20 @@ function tabKomponenten(b){
   const groupsHtml=gNames.map((g,gi)=>{
     const comps=groups[g]||[];
     if(em){
-      return`<div class="group-card" style="margin-bottom:9px">
-        <div class="group-title-row"><div class="group-title-text">${esc(g)}</div></div>
-        ${comps.map((c,ci)=>{const fi=b.components.indexOf(c);return`<div class="field-edit-row">
+      return`<div class="group-card" data-dnd-type="comp-group" data-dnd-idx="${gi}" style="margin-bottom:9px">
+        <div class="group-title-row"><div class="drag-handle" data-dnd-type="comp-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'comp-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+        ${comps.map((c,ci)=>{const fi=b.components.indexOf(c);return`<div class="field-edit-row" data-dnd-type="comp" data-dnd-idx="${ci}">
+          <div class="drag-handle" data-dnd-type="comp" data-dnd-idx="${ci}" onpointerdown="startDrag(event,'comp',${ci},${gi});event.stopPropagation()">${HSVG}</div>
           <input class="field-edit-input" value="${esc(c.name)}" onblur="renameCompField('${c.name.replace(/'/g,"\\'")}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
           <button class="btn btn-danger btn-sm" onclick="deleteCompField('${c.name.replace(/'/g,"\\'")}')">✕</button>
         </div>`;}).join('')}
         <div style="padding:8px 12px"><button class="btn btn-secondary btn-sm" onclick="addCompField('${g.replace(/'/g,"\\'")}')">+ Feld</button></div>
       </div>`;
     }
-    return`<div class="group-card" data-dnd-type="comp-group" data-dnd-idx="${gi}">
-      <div class="group-title-row"><div class="drag-handle" data-dnd-type="comp-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'comp-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+    return`<div class="group-card">
+      <div class="group-title-row"><div class="group-title-text">${esc(g)}</div></div>
       ${comps.map((c,ci)=>{const h=cur(c.history);const fi=b.components.indexOf(c);
-        return`<div class="comp-row${c.notVorhanden?' not-available':''}" data-dnd-type="comp" data-dnd-idx="${ci}" onclick="openCompModal(${fi})">
-          <div class="drag-handle" data-dnd-type="comp" data-dnd-idx="${ci}" onpointerdown="startDrag(event,'comp',${ci},${gi});event.stopPropagation()">${HSVG}</div>
+        return`<div class="comp-row${c.notVorhanden?' not-available':''}" onclick="openCompModal(${fi})">
           <div class="comp-name">${esc(c.name)}</div>
           <div class="comp-val ${c.notVorhanden?'na':!h?'empty':''}">${c.notVorhanden?'Nicht vorhanden':h?esc(h.wert):'Nicht erfasst'}</div>
           <div class="comp-num">${!c.notVorhanden&&h&&h.gewicht?h.gewicht+'g':''}</div>
@@ -849,7 +894,7 @@ function tabKomponenten(b){
   }).join('');
 
   // Collapsible Zeitstrahl
-  const ztId='zt'+Math.random().toString(36).slice(2);
+  const ztId='zt-main';
   const ztHtml=buildZeitstrahlHtml(b);
 
   return`<div class="section">
@@ -860,7 +905,7 @@ function tabKomponenten(b){
         ${editBtn('komponenten')}
       </div>
     </div>
-    ${em?`<div class="edit-mode-bar">✏ Felder umbenennen oder löschen. Änderungen gelten für alle Bikes.</div>`:`<p style="font-size:11px;color:var(--muted);margin-bottom:11px">Gruppen und Zeilen per <strong>≡</strong> Drag & Drop sortieren</p>`}
+    ${em?`<div class="edit-mode-bar">✏ Felder umbenennen oder löschen. Drag & Drop zum Sortieren. Änderungen gelten für alle Bikes.</div>`:''}
     ${groupsHtml}
     <div class="collapse-header" onclick="const c=document.getElementById('${ztId}');const o=c.style.display!=='none';c.style.display=o?'none':'block';this.querySelector('.collapse-icon').classList.toggle('open',!o)">
       <span class="collapse-icon">▶</span>Zeitstrahl
@@ -879,9 +924,10 @@ function tabEinstellungen(b){
   const groupsHtml=gNames.map((g,gi)=>{
     const settings=groups[g]||[];
     if(em){
-      return`<div class="group-card" style="margin-bottom:9px">
-        <div class="group-title-row"><div class="group-title-text">${esc(g)}</div></div>
-        ${settings.map((s,si)=>{return`<div class="field-edit-row">
+      return`<div class="group-card" data-dnd-type="setting-group" data-dnd-idx="${gi}" style="margin-bottom:9px">
+        <div class="group-title-row"><div class="drag-handle" data-dnd-type="setting-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'setting-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+        ${settings.map((s,si)=>{return`<div class="field-edit-row" data-dnd-type="setting" data-dnd-idx="${si}">
+          <div class="drag-handle" data-dnd-type="setting" data-dnd-idx="${si}" onpointerdown="startDrag(event,'setting',${si},${gi});event.stopPropagation()">${HSVG}</div>
           <input class="field-edit-input" value="${esc(s.label)}" id="se_${b.settings.indexOf(s)}" onblur="renameSetField('${s.label.replace(/'/g,"\\'")}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
           <input class="field-edit-unit" value="${esc(s.unit||'')}" placeholder="Einheit" onblur="const si=${b.settings.indexOf(s)};getBike(bikeId).settings[si].unit=this.value;markDirty('Felder')">
           <button class="btn btn-danger btn-sm" onclick="deleteSetField('${s.label.replace(/'/g,"\\'")}')">✕</button>
@@ -889,11 +935,10 @@ function tabEinstellungen(b){
         <div style="padding:8px 12px"><button class="btn btn-secondary btn-sm" onclick="addSetField()">+ Feld</button></div>
       </div>`;
     }
-    return`<div class="group-card" data-dnd-type="setting-group" data-dnd-idx="${gi}">
-      <div class="group-title-row"><div class="drag-handle" data-dnd-type="setting-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'setting-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+    return`<div class="group-card">
+      <div class="group-title-row"><div class="group-title-text">${esc(g)}</div></div>
       ${settings.map((s,si)=>{const gi2=b.settings.indexOf(s);const h=cur(s.history);
-        return`<div class="setting-row" data-dnd-type="setting" data-dnd-idx="${si}">
-          <div class="drag-handle" data-dnd-type="setting" data-dnd-idx="${si}" onpointerdown="startDrag(event,'setting',${si},${gi});event.stopPropagation()">${HSVG}</div>
+        return`<div class="setting-row">
           <div class="setting-label">${esc(s.label)}${s.unit?` <span style="font-size:9.5px;font-weight:400">(${esc(s.unit)})</span>`:''}</div>
           <div class="setting-val ${!h?'empty':''}" onclick="openSetModal(${gi2})">${h?esc(h.wert)+(s.unit?' '+s.unit:''):'— klicken'}</div>
           <div class="setting-actions">${s.history.length>1?`<span class="hist-badge">${s.history.length}×</span>`:''}<button class="btn btn-ghost btn-sm" onclick="openSetModal(${gi2})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
@@ -907,7 +952,7 @@ function tabEinstellungen(b){
       <div class="section-title">Einstellungen</div>
       <div style="display:flex;gap:8px">${editBtn('einstellungen')}</div>
     </div>
-    ${em?`<div class="edit-mode-bar">✏ Felder umbenennen oder löschen. Änderungen gelten für alle Bikes.</div>`:`<p style="font-size:11px;color:var(--muted);margin-bottom:11px">Gruppen und Felder per <strong>≡</strong> Drag & Drop sortieren</p>`}
+    ${em?`<div class="edit-mode-bar">✏ Felder umbenennen oder löschen. Drag & Drop zum Sortieren. Änderungen gelten für alle Bikes.</div>`:''}
     ${groupsHtml}
     ${em?`<div style="margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="addSetField()">+ Neues Feld</button></div>`:''}
   </div>`;
@@ -920,13 +965,15 @@ function tabGeometrie(b){
   const groups={};
   state.geoDefs.forEach(def=>{const g=def.group||'Geometrie';if(!groups[g])groups[g]=[];groups[g].push(def);});
   const gNames=Object.keys(groups);
+  dndGeoGrpNames=gNames;
 
-  const groupsHtml=gNames.map(g=>{
+  const groupsHtml=gNames.map((g,gi)=>{
     const defs=groups[g];
     if(em){
-      return`<div class="group-card" style="margin-bottom:9px">
-        <div class="group-title-row"><div class="group-title-text">${esc(g)}</div></div>
-        ${defs.map(def=>`<div class="field-edit-row">
+      return`<div class="group-card" data-dnd-type="geo-group" data-dnd-idx="${gi}" style="margin-bottom:9px">
+        <div class="group-title-row"><div class="drag-handle" data-dnd-type="geo-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'geo-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+        ${defs.map((def,di)=>`<div class="field-edit-row" data-dnd-type="geo" data-dnd-idx="${di}">
+          <div class="drag-handle" data-dnd-type="geo" data-dnd-idx="${di}" onpointerdown="startDrag(event,'geo',${di},${gi});event.stopPropagation()">${HSVG}</div>
           <input class="field-edit-input" value="${esc(def.label)}" onblur="renameGeoField('${def.id}',this.value,document.getElementById('gu_${def.id}').value)" onkeydown="if(event.key==='Enter')this.blur()">
           <input class="field-edit-unit" id="gu_${def.id}" value="${esc(def.unit||'')}" placeholder="Einheit">
           <button class="btn btn-danger btn-sm" onclick="deleteGeoField('${def.id}')">✕</button>
@@ -939,14 +986,13 @@ function tabGeometrie(b){
       ${defs.map(def=>{
         const geo=b.geometry.find(g=>g.defId===def.id);
         const h=geo?cur(geo.history):null;
-        const gi=geo?b.geometry.indexOf(geo):-1;
+        const gi2=geo?b.geometry.indexOf(geo):-1;
         return`<div class="geo-row">
-          <div class="drag-handle" style="color:transparent">≡</div>
           <div class="geo-label">${esc(def.label)}${def.unit?` <span style="font-size:9.5px;font-weight:400">(${esc(def.unit)})</span>`:''}</div>
-          <div class="geo-val ${!h?'empty':''}" onclick="${gi>=0?`openGeoModal(${gi})`:''}">
+          <div class="geo-val ${!h?'empty':''}" onclick="${gi2>=0?`openGeoModal(${gi2})`:''}">
             ${h?esc(h.wert)+(def.unit?' '+def.unit:''):'— klicken'}
           </div>
-          <div class="setting-actions">${h&&geo.history.length>1?`<span class="hist-badge">${geo.history.length}×</span>`:''}<button class="btn btn-ghost btn-sm" onclick="${gi>=0?`openGeoModal(${gi})`:''}" ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
+          <div class="setting-actions">${h&&geo.history.length>1?`<span class="hist-badge">${geo.history.length}×</span>`:''}<button class="btn btn-ghost btn-sm" onclick="${gi2>=0?`openGeoModal(${gi2})`:''}" ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
         </div>`;
       }).join('')}
     </div>`;
@@ -957,8 +1003,9 @@ function tabGeometrie(b){
       <div class="section-title">Geometrie</div>
       ${editBtn('geometrie')}
     </div>
-    ${em?`<div class="edit-mode-bar">✏ Felder umbenennen oder löschen. Änderungen gelten für alle Bikes.</div>`:''}
+    ${em?`<div class="edit-mode-bar">✏ Felder umbenennen oder löschen. Drag & Drop zum Sortieren. Änderungen gelten für alle Bikes.</div>`:''}
     ${groupsHtml}
+    ${em?`<div style="margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="addGeoField()">+ Neues Feld</button></div>`:''}
   </div>`;
 }
 
@@ -1438,6 +1485,63 @@ function savePhotoDate(){
   markDirty('Fotos');closeModal('epd-modal');switchTab('info');
 }
 
+let _infoEditField='';
+function openInfoEdit(field,label,type){
+  _infoEditField=field;const b=getBike(bikeId);
+  showModal('info-modal',`
+    <div class="modal-header"><div><div class="modal-title">${esc(label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
+    <div class="modal-body"><div class="form-group"><label class="form-label">${esc(label)}</label><input class="form-input" id="info-inp" type="${type||'text'}" value="${esc(b[field]||'')}" onkeydown="if(event.key==='Enter')saveInfoField()"></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoField()">Speichern</button></div>`);
+  setTimeout(()=>{const el=document.getElementById('info-inp');if(el){el.focus();el.select();}},50);
+}
+function openInfoText(field,label){
+  _infoEditField=field;const b=getBike(bikeId);
+  showModal('info-modal',`
+    <div class="modal-header"><div><div class="modal-title">${esc(label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
+    <div class="modal-body"><div class="form-group"><textarea class="form-input" id="info-inp" rows="4">${esc(b[field]||'')}</textarea></div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoField()">Speichern</button></div>`);
+  setTimeout(()=>document.getElementById('info-inp')?.focus(),50);
+}
+function saveInfoField(){
+  const b=getBike(bikeId);b[_infoEditField]=vv('info-inp');
+  markDirty(_infoEditField);closeModal('info-modal');switchTab('info');
+}
+function openInfoRadgroesse(){
+  const b=getBike(bikeId);
+  showModal('info-modal',`
+    <div class="modal-header"><div><div class="modal-title">Radgrösse</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
+    <div class="modal-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">Vorne</label><input class="form-input" id="info-rv" maxlength="5" value="${esc(b.radgroesseV||'')}" placeholder='29"' onkeydown="if(event.key==='Enter')saveInfoRadgroesse()"></div>
+      <div class="form-group"><label class="form-label">Hinten</label><input class="form-input" id="info-rh" maxlength="5" value="${esc(b.radgroesseH||'')}" placeholder='29"' onkeydown="if(event.key==='Enter')saveInfoRadgroesse()"></div>
+    </div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoRadgroesse()">Speichern</button></div>`);
+  setTimeout(()=>document.getElementById('info-rv')?.focus(),50);
+}
+function saveInfoRadgroesse(){
+  const b=getBike(bikeId);b.radgroesseV=vv('info-rv');b.radgroesseH=vv('info-rh');
+  markDirty('Radgrösse');closeModal('info-modal');switchTab('info');
+}
+function openInfoGewicht(){
+  const b=getBike(bikeId);
+  const totalCompG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
+  showModal('info-modal',`
+    <div class="modal-header"><div><div class="modal-title">Gewicht</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
+    <div class="modal-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">Gewogen (g)</label><input class="form-input" id="info-gw" type="number" value="${esc(b.gewichtGewogen||'')}" placeholder="—" onkeydown="if(event.key==='Enter')saveInfoGewicht()"></div>
+      <div class="form-group"><label class="form-label">Berechnet (g)</label><input class="form-input" readonly tabindex="-1" value="${totalCompG>0?totalCompG:''}" placeholder="—" style="color:var(--muted);cursor:default"></div>
+    </div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoGewicht()">Speichern</button></div>`);
+  setTimeout(()=>document.getElementById('info-gw')?.focus(),50);
+}
+function saveInfoGewicht(){
+  const b=getBike(bikeId);b.gewichtGewogen=vv('info-gw');
+  markDirty('Gewicht');closeModal('info-modal');switchTab('info');
+}
+let _snapTarget=null;
+function goToSnap(bId,date){
+  _snapTarget=date;
+  navigate('bike',bId,'komponenten');
+}
 function openLightbox(src){
   const lb=document.getElementById('lightbox');
   document.getElementById('lightbox-img').src=src;
@@ -1457,7 +1561,7 @@ function getGalleryPhotos(){
     b.fotos.forEach(f=>{
       const src=typeof f==='string'?f:f.data;
       const datum=typeof f==='string'?null:f.datum;
-      photos.push({src,datum,label:b.marke+' '+b.modell});
+      photos.push({src,datum,bikeId:b.id,label:b.marke+' '+b.modell});
     });
   });
   photos.sort((a,b)=>(b.datum||'')>(a.datum||'')?1:(b.datum||'')<(a.datum||'')?-1:0);
@@ -1469,7 +1573,7 @@ function buildGalleryGrid(){
   const filtered=photos.filter(p=>p.datum&&p.datum>=from&&p.datum<=to);
   if(!filtered.length)return`<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Keine Fotos im gewählten Zeitraum.</div>`;
   window._galSrcs=filtered.map(p=>p.src);
-  return`<div class="gal-grid">${filtered.map((p,i)=>`<div class="gal-thumb" onclick="openLightbox(window._galSrcs[${i}])"><img src="${p.src}" loading="lazy"><div class="gal-label">${esc(p.label)}${p.datum?'<br><span style="font-weight:400;opacity:.8">'+fmtDate(p.datum)+'</span>':''}</div></div>`).join('')}</div>`;
+  return`<div class="gal-grid">${filtered.map((p,i)=>`<div class="gal-item"><div class="gal-thumb" onclick="openLightbox(window._galSrcs[${i}])"><img src="${p.src}" loading="lazy"></div><div class="gal-caption"><a onclick="goToSnap('${p.bikeId}','${p.datum||''}')">${esc(p.label)}</a>${p.datum?`<div class="gal-date">${fmtDate(p.datum)}</div>`:''}</div></div>`).join('')}</div>`;
 }
 function updateGalRange(){
   const s1=document.getElementById('gal-r1'),s2=document.getElementById('gal-r2');
@@ -1587,7 +1691,7 @@ function buildZeitstrahlHtml(b){
       ${fotoArr.length>1?`<div class="ss-dots">${fotoArr.map((_,i)=>`<span class="ss-dot${i===0?' active':''}"></span>`).join('')}</div>`:''}
     </div>`:'';
 
-    return`<div style="display:flex;gap:14px;margin-bottom:22px">
+    return`<div id="snap-${d}" style="display:flex;gap:14px;margin-bottom:22px">
       <div style="display:flex;flex-direction:column;align-items:center;gap:0">
         <div style="width:12px;height:12px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px"></div>
         <div style="width:2px;flex:1;background:var(--border);margin-top:4px"></div>
