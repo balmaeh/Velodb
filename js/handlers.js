@@ -931,7 +931,7 @@ function saveInfoGewicht() {
 function unloadJson() {
   if (!confirm('Alle Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
   state = { version: 12, personalInfo: '', bikes: [], geoDefs: defaultGeoDefs(), infoDefs: DEFAULT_INFO_DEFS.map(d => ({ ...d })) };
-  localStorage.setItem('velodb_v6', JSON.stringify(state));
+  localStorage.setItem(KEY, JSON.stringify(state));
   hideBanner();
   buildBikeLinks();
   navigate('overview');
