@@ -93,6 +93,12 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .info-lbl{font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 .info-val{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .info-val.empty{color:var(--muted);font-style:italic}
+.info-field-row{display:flex;align-items:center;padding:9px 13px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;gap:10px}
+.info-field-row:last-child{border-bottom:none}
+.info-field-row:hover{background:var(--surface2)}
+.info-field-row .info-lbl{margin-bottom:0;width:145px;flex-shrink:0}
+.info-field-row .info-val{flex:1}
+.info-field-row.dnd-over{background:var(--accent-dim)!important}
 .comp-val{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .comp-val.empty{color:var(--muted);font-style:italic}
 .comp-val.na{color:var(--muted);font-style:italic}
@@ -394,9 +400,26 @@ const STD_SETTINGS=[
   {label:'Reifendruck hinten',unit:'Bar',group:'Reifen'}
 ];
 
+const DEFAULT_INFO_DEFS=[
+  {id:'marke',label:'Marke',type:'text',isStandard:true},
+  {id:'modell',label:'Modell',type:'text',isStandard:true},
+  {id:'variante',label:'Variante',type:'text',isStandard:true},
+  {id:'jahr',label:'Modelljahr',type:'text',isStandard:true},
+  {id:'typ',label:'Typ',type:'text',isStandard:true},
+  {id:'farbe',label:'Farbe',type:'text',isStandard:true},
+  {id:'radgroesse',label:'Radgrösse v / h',type:'radgroesse',isStandard:true},
+  {id:'gewicht',label:'Gewicht gew. / ber.',type:'gewicht',isStandard:true},
+  {id:'bezug',label:'Bezugsquelle',type:'text',isStandard:true},
+  {id:'bezugsdatum',label:'Bezugsdatum',type:'date',isStandard:true},
+  {id:'preis',label:'Kaufpreis (CHF)',type:'number',isStandard:true},
+  {id:'listenpreis',label:'Listenpreis (CHF)',type:'number',isStandard:true},
+  {id:'aktuellerZustand',label:'Aktueller Zustand',type:'textarea',isStandard:true},
+  {id:'bemerkungen',label:'Bemerkungen',type:'textarea',isStandard:true},
+];
+
 function newBike(o={}){
   return{id:uid(),status:'aktiv',marke:'',modell:'',variante:'',typ:'',jahr:'',farbe:'',radgroesseV:'',radgroesseH:'',groesse:'',bezug:'',bezugsdatum:'',preis:'',listenpreis:'',federweg:'',gewichtGewogen:'',fotos:[],
-    aktuellerZustand:'',bemerkungen:'',
+    aktuellerZustand:'',bemerkungen:'',infoVals:{},
     components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
     settings:STD_SETTINGS.map(s=>({...s,isStandard:true,history:[]})),
     geometry:[],todos:[],...o};
@@ -492,6 +515,7 @@ function setGroupOrder(sets){const seen=new Set(),o=[];sets.forEach(s=>{const g=
 let dndCompGrpNames=[];
 let dndSetGrpNames=[];
 let dndGeoGrpNames=[];
+let dndInfoFields=[];
 
 // ================================================================
 // STATE
@@ -499,11 +523,12 @@ let dndGeoGrpNames=[];
 const KEY='velodb_v6';
 let state=(()=>{try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch{}return null;})();
 if(!state){
-  state={version:12,personalInfo:'',bikes:[],geoDefs:defaultGeoDefs()};
+  state={version:12,personalInfo:'',bikes:[],geoDefs:defaultGeoDefs(),infoDefs:DEFAULT_INFO_DEFS.map(d=>({...d}))};
   localStorage.setItem(KEY,JSON.stringify(state));
 }
 // migrate old data
 ensureGeoDefs();
+if(!state.infoDefs)state.infoDefs=DEFAULT_INFO_DEFS.map(d=>({...d}));
 state.bikes.forEach(b=>{
   b.components.forEach(c=>{if(c.notVorhanden===undefined)c.notVorhanden=false;});
   b.fotos=(b.fotos||[]).map(f=>typeof f==='string'?{data:f,datum:today()}:f);
@@ -514,6 +539,7 @@ state.bikes.forEach(b=>{
   if(b.listenpreis===undefined)b.listenpreis='';
   if(b.radgroesseV===undefined)b.radgroesseV='';
   if(b.radgroesseH===undefined)b.radgroesseH='';
+  if(!b.infoVals)b.infoVals={};
   ensureBikeGeo(b);
 });
 
@@ -607,6 +633,9 @@ function doReorder(type,from,to,grpIdx){
     const gs=[...new Set(old.map(d=>d.group||'Geometrie'))];
     state.geoDefs=gs.flatMap(g=>g===grpName?gc:old.filter(d=>(d.group||'Geometrie')===g));
     markDirty('Geometrie');switchTab('geometrie');
+  }else if(type==='info-field'){
+    const[item]=state.infoDefs.splice(from,1);state.infoDefs.splice(to,0,item);
+    markDirty('Info-Felder');switchTab('info');
   }
 }
 
@@ -806,50 +835,69 @@ function renderTab(b){
   return tabInfo(b);
 }
 
+function getInfoVal(b,def){
+  const totalCompG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
+  if(def.type==='radgroesse')return b.radgroesseV||b.radgroesseH?`${b.radgroesseV||'—'} / ${b.radgroesseH||'—'}`:'';
+  if(def.type==='gewicht'){const g=b.gewichtGewogen?b.gewichtGewogen+'g':'';const bc=totalCompG>0?totalCompG+'g':'';return g||bc?`${g||'—'} / ${bc||'—'}`:''}
+  if(def.isStandard)return def.id==='bezugsdatum'&&b[def.id]?fmtDate(b[def.id]):b[def.id]||'';
+  return(b.infoVals||{})[def.id]||'';
+}
+function openInfoFieldEdit(defId){
+  const def=state.infoDefs.find(d=>d.id===defId);if(!def)return;
+  if(def.type==='radgroesse')return openInfoRadgroesse();
+  if(def.type==='gewicht')return openInfoGewicht();
+  if(def.type==='textarea')return openInfoText(def.id,def.label);
+  openInfoEdit(def.id,def.label,def.type||'text');
+}
+function addInfoField(){
+  showModal('addinfo-modal',`
+    <div class="modal-header"><div><div class="modal-title">Neues Feld</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('addinfo-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Feldname</label><input class="form-input" id="addinfo-name" placeholder="z.B. Seriennummer..." onkeydown="if(event.key==='Enter')confirmAddInfoField()"></div>
+      <div class="form-group"><label class="form-label">Typ</label><select class="form-input" id="addinfo-type"><option value="text">Text</option><option value="number">Zahl</option><option value="date">Datum</option><option value="textarea">Mehrzeilig</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('addinfo-modal')">Abbrechen</button><button class="btn btn-primary" onclick="confirmAddInfoField()">Hinzufügen</button></div>`);
+  setTimeout(()=>document.getElementById('addinfo-name')?.focus(),50);
+}
+function confirmAddInfoField(){
+  const label=vv('addinfo-name').trim();if(!label){showToast('Bitte Feldname eingeben');return;}
+  const type=vv('addinfo-type');const id='info_'+uid();
+  state.infoDefs.push({id,label,type,isStandard:false});
+  closeModal('addinfo-modal');markDirty('Info-Felder');switchTab('info');
+}
+function renameInfoField(defId,newLabel){
+  const def=state.infoDefs.find(d=>d.id===defId);
+  if(def&&newLabel.trim())def.label=newLabel.trim();
+  markDirty('Info-Felder');
+}
+function deleteInfoField(defId){
+  const def=state.infoDefs.find(d=>d.id===defId);if(!def||def.isStandard)return;
+  if(!confirm(`Feld "${def.label}" löschen?`))return;
+  state.infoDefs=state.infoDefs.filter(d=>d.id!==defId);
+  state.bikes.forEach(b=>{if(b.infoVals)delete b.infoVals[defId];});
+  markDirty('Info-Felder');switchTab('info');
+}
 function tabInfo(b){
   const em=editMode==='info';
-  const totalCompG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
-  const ic=(l,v,fn)=>em
-    ?`<div class="info-cell" onclick="${fn}"><div class="info-lbl">${l}</div><div class="info-val${v?'':' empty'}">${v?esc(v):'—'}</div></div>`
-    :`<div class="info-cell" style="cursor:default"><div class="info-lbl">${l}</div><div class="info-val${v?'':' empty'}">${v?esc(v):'—'}</div></div>`;
-  const rad=b.radgroesseV||b.radgroesseH?`${b.radgroesseV||'—'} / ${b.radgroesseH||'—'}`:'';
-  const gewG=b.gewichtGewogen?b.gewichtGewogen+'g':'';
-  const gewB=totalCompG>0?totalCompG+'g':'';
-  const gewDisp=gewG||gewB?`${gewG||'—'} / ${gewB||'—'}`:'';
+  dndInfoFields=state.infoDefs;
   window._bikeSrcs=(b.fotos||[]).map(f=>typeof f==='string'?f:f.data);
   const fotosHtml=b.fotos&&b.fotos.length
     ?`<div class="photo-grid">${b.fotos.map((f,i)=>{const src=window._bikeSrcs[i];return`<div class="photo-thumb"><img src="${src}" style="cursor:zoom-in" onclick="openLightbox(window._bikeSrcs[${i}])"><div class="photo-date-badge" onclick="editPhotoDate(${i})" title="Datum bearbeiten">${(typeof f==='string'?'':f.datum)||'–'} ✎</div><div class="photo-del" onclick="delPhoto(${i})">✕</div></div>`;}).join('')}</div>`
     :`<div class="photo-upload-area" onclick="document.getElementById('file-photo').click()">Fotos hinzufügen</div>`;
+  const fieldsHtml=em
+    ?state.infoDefs.map((def,di)=>`<div class="field-edit-row" data-dnd-type="info-field" data-dnd-idx="${di}">
+        <div class="drag-handle" data-dnd-type="info-field" data-dnd-idx="${di}" onpointerdown="startDrag(event,'info-field',${di},0)">${HSVG}</div>
+        <input class="field-edit-input" value="${esc(def.label)}" onblur="renameInfoField('${def.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+        ${def.isStandard?`<span style="font-size:10px;color:var(--muted);padding:0 4px;white-space:nowrap">Standard</span>`:`<button class="btn btn-danger btn-sm" onclick="deleteInfoField('${def.id}')">✕</button>`}
+      </div>`).join('')
+    :state.infoDefs.map(def=>{const v=getInfoVal(b,def);return`<div class="info-field-row" onclick="openInfoFieldEdit('${def.id}')">
+        <div class="info-lbl">${esc(def.label)}</div>
+        <div class="info-val${v?'':' empty'}">${v?esc(v):'—'}</div>
+      </div>`;}).join('');
   return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div>${editBtn('info')}</div>
-    ${em?`<div class="edit-mode-bar">✏ Felder anklicken um Werte zu bearbeiten.</div>`:''}
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-      <div class="info-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-        ${ic('Marke',b.marke,"openInfoEdit('marke','Marke')")}
-        ${ic('Modell',b.modell,"openInfoEdit('modell','Modell')")}
-        ${ic('Variante',b.variante,"openInfoEdit('variante','Variante')")}
-        ${ic('Modelljahr',b.jahr,"openInfoEdit('jahr','Modelljahr')")}
-      </div>
-      <div class="info-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-        ${ic('Typ',b.typ,"openInfoEdit('typ','Typ')")}
-        ${ic('Farbe',b.farbe,"openInfoEdit('farbe','Farbe')")}
-        ${ic('Radgrösse v / h',rad,'openInfoRadgroesse()')}
-        ${ic('Gewicht gew. / ber.',gewDisp,'openInfoGewicht()')}
-      </div>
-      <div style="border-top:2px solid var(--border)"></div>
-      <div class="info-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-        ${ic('Bezugsquelle',b.bezug,"openInfoEdit('bezug','Bezugsquelle')")}
-        ${ic('Bezugsdatum',b.bezugsdatum?fmtDate(b.bezugsdatum):'',"openInfoEdit('bezugsdatum','Bezugsdatum','date')")}
-        ${ic('Kaufpreis (CHF)',b.preis,"openInfoEdit('preis','Kaufpreis (CHF)','number')")}
-        ${ic('Listenpreis (CHF)',b.listenpreis,"openInfoEdit('listenpreis','Listenpreis (CHF)','number')")}
-      </div>
-      <div style="border-top:2px solid var(--border)"></div>
-      <div class="info-row" style="grid-template-columns:1fr">
-        ${ic('Aktueller Zustand',b.aktuellerZustand,"openInfoText('aktuellerZustand','Aktueller Zustand')")}
-      </div>
-      <div class="info-row" style="grid-template-columns:1fr;border-bottom:none">
-        ${ic('Bemerkungen',b.bemerkungen,"openInfoText('bemerkungen','Bemerkungen')")}
-      </div>
-    </div>
+    ${em?`<div class="edit-mode-bar">✏ Verschieben, umbenennen oder löschen. Standard-Felder können nicht gelöscht werden.</div>`:''}
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">${fieldsHtml}</div>
+    ${em?`<div style="margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="addInfoField()">+ Neues Feld</button></div>`:''}
   </div>
   <div class="section"><div class="section-header"><div class="section-title">Fotos</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-photo').click()">+ Foto</button></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px">
@@ -1513,24 +1561,33 @@ function savePhotoDate(){
 }
 
 let _infoEditField='';
+function _infoReadVal(b,field){
+  const def=state.infoDefs?.find(d=>d.id===field);
+  return def&&!def.isStandard?((b.infoVals||{})[field]||''):(b[field]||'');
+}
 function openInfoEdit(field,label,type){
   _infoEditField=field;const b=getBike(bikeId);
+  const val=_infoReadVal(b,field);
   showModal('info-modal',`
     <div class="modal-header"><div><div class="modal-title">${esc(label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
-    <div class="modal-body"><div class="form-group"><label class="form-label">${esc(label)}</label><input class="form-input" id="info-inp" type="${type||'text'}" value="${esc(b[field]||'')}" onkeydown="if(event.key==='Enter')saveInfoField()"></div></div>
+    <div class="modal-body"><div class="form-group"><label class="form-label">${esc(label)}</label><input class="form-input" id="info-inp" type="${type||'text'}" value="${esc(val)}" onkeydown="if(event.key==='Enter')saveInfoField()"></div></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoField()">Speichern</button></div>`);
   setTimeout(()=>{const el=document.getElementById('info-inp');if(el){el.focus();el.select();}},50);
 }
 function openInfoText(field,label){
   _infoEditField=field;const b=getBike(bikeId);
+  const val=_infoReadVal(b,field);
   showModal('info-modal',`
     <div class="modal-header"><div><div class="modal-title">${esc(label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
-    <div class="modal-body"><div class="form-group"><textarea class="form-input" id="info-inp" rows="4">${esc(b[field]||'')}</textarea></div></div>
+    <div class="modal-body"><div class="form-group"><textarea class="form-input" id="info-inp" rows="4">${esc(val)}</textarea></div></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoField()">Speichern</button></div>`);
   setTimeout(()=>document.getElementById('info-inp')?.focus(),50);
 }
 function saveInfoField(){
-  const b=getBike(bikeId);b[_infoEditField]=vv('info-inp');
+  const b=getBike(bikeId);const def=state.infoDefs?.find(d=>d.id===_infoEditField);
+  const val=vv('info-inp');
+  if(def&&!def.isStandard){if(!b.infoVals)b.infoVals={};b.infoVals[def.id]=val;}
+  else{b[_infoEditField]=val;}
   markDirty(_infoEditField);closeModal('info-modal');switchTab('info');
 }
 function openInfoRadgroesse(){
