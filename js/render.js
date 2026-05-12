@@ -163,7 +163,6 @@ function tabInfo(b) {
   <div class="section"><div class="section-header"><div class="section-title">Fotos</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-photo').click()">+ Foto</button></div>
     <div class="photo-drop-zone" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="if(!event.relatedTarget||!this.contains(event.relatedTarget))this.classList.remove('drag-over')" ondrop="dropPhotos(event)">
       ${fotosHtml}
-      <div style="margin-top:11px"><button class="btn btn-secondary btn-sm" onclick="exportCsv('${b.id}')">📄 CSV Export</button></div>
     </div>
   </div>`;
 }

@@ -1095,6 +1095,128 @@ function unloadJson() {
   showToast('Daten gelöscht');
 }
 
+function exportExcel() {
+  if (typeof XLSX === 'undefined') { showToast('SheetJS nicht geladen'); return; }
+  const wb = XLSX.utils.book_new();
+  const stripTags = s => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const infoRows = [['Marke','Modell','Variante','Typ','Jahr','Farbe','Radgrösse V','Radgrösse H','Gewicht (g)','Bezugsquelle','Bezugsdatum','Kaufpreis CHF','Listenpreis CHF','Aktueller Zustand','Bemerkungen','Status']];
+  state.bikes.forEach(b => {
+    infoRows.push([b.marke,b.modell,b.variante,b.typ,b.jahr,b.farbe,b.radgroesseV,b.radgroesseH,b.gewichtGewogen||'',b.bezug,b.bezugsdatum,b.preis||'',b.listenpreis||'',stripTags(b.aktuellerZustand),stripTags(b.bemerkungen),b.status]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(infoRows), 'Info');
+
+  const kompRows = [['Bike','Gruppe','Komponente','Datum','Bezeichnung','Gewicht (g)','Preis (CHF)','Notiz']];
+  state.bikes.forEach(b => {
+    const lbl = [b.marke,b.modell].filter(Boolean).join(' ');
+    b.components.filter(c => !c.notVorhanden).forEach(c => {
+      c.history.forEach(h => kompRows.push([lbl,c.group,c.name,h.datum||'',h.wert||'',h.gewicht||'',h.preis||'',h.notiz||'']));
+    });
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(kompRows), 'Komponenten');
+
+  const setRows = [['Bike','Gruppe','Einstellung','Einheit','Datum','Wert','Notiz']];
+  state.bikes.forEach(b => {
+    const lbl = [b.marke,b.modell].filter(Boolean).join(' ');
+    b.settings.forEach(s => {
+      s.history.forEach(h => setRows.push([lbl,s.group||'',s.label,s.unit||'',h.datum||'',h.wert||'',h.notiz||'']));
+    });
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(setRows), 'Einstellungen');
+
+  XLSX.writeFile(wb, `velodb_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportExcelTemplate() {
+  if (typeof XLSX === 'undefined') { showToast('SheetJS nicht geladen'); return; }
+  const wb = XLSX.utils.book_new();
+
+  const kompRows = [['Bike','Gruppe','Komponente','Datum (JJJJ-MM-TT)','Bezeichnung','Gewicht (g)','Preis (CHF)','Notiz']];
+  if (state.bikes.length) {
+    state.bikes.forEach(b => {
+      const lbl = [b.marke,b.modell].filter(Boolean).join(' ');
+      b.components.filter(c => !c.notVorhanden).forEach(c => kompRows.push([lbl,c.group,c.name,'','','','','']));
+    });
+  } else {
+    kompRows.push(['Marke Modell','Rahmen & Federung','Rahmen','2024-01-01','Beispiel','1000','200','']);
+  }
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(kompRows), 'Komponenten');
+
+  const setRows = [['Bike','Gruppe','Einstellung','Einheit','Datum (JJJJ-MM-TT)','Wert','Notiz']];
+  if (state.bikes.length) {
+    state.bikes.forEach(b => {
+      const lbl = [b.marke,b.modell].filter(Boolean).join(' ');
+      b.settings.forEach(s => setRows.push([lbl,s.group||'',s.label,s.unit||'','','','']));
+    });
+  } else {
+    setRows.push(['Marke Modell','Gabel','Gabel Luftdruck','PSI','2024-01-01','75','']);
+  }
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(setRows), 'Einstellungen');
+
+  XLSX.writeFile(wb, 'velodb_vorlage.xlsx');
+}
+
+function importExcelFile(e) {
+  if (typeof XLSX === 'undefined') { showToast('SheetJS nicht geladen'); return; }
+  const file = e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+      let total = 0;
+
+      function importSheet(ws, isSettings) {
+        if (!ws) return;
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        if (rows.length < 2) return;
+        const h = rows[0].map(s => String(s).toLowerCase());
+        const iB = h.findIndex(x => x.includes('bike'));
+        const iK = isSettings ? h.findIndex(x => x.includes('einstellung')) : h.findIndex(x => x.includes('komponente'));
+        const iD = h.findIndex(x => x.includes('datum'));
+        const iW = isSettings ? h.findIndex(x => x === 'wert' || x.startsWith('wert')) : h.findIndex(x => x.includes('bezeichnung') || x === 'wert');
+        const iGew = h.findIndex(x => x.includes('gewicht'));
+        const iP = h.findIndex(x => x.includes('preis'));
+        const iN = h.findIndex(x => x.includes('notiz'));
+        if (iK < 0 || iD < 0 || iW < 0) return;
+        rows.slice(1).forEach(row => {
+          const bikeLabel = iB >= 0 ? String(row[iB]).trim() : '';
+          const name = String(row[iK]).trim();
+          const datum = String(row[iD]).trim();
+          const wert = String(row[iW]).trim();
+          if (!name || !datum || !wert) return;
+          let b = state.bikes.find(b => bikeLabel && [b.marke,b.modell].filter(Boolean).join(' ') === bikeLabel);
+          if (!b && state.bikes.length === 1) b = state.bikes[0];
+          if (!b) return;
+          if (isSettings) {
+            const s = b.settings.find(s => s.label === name);
+            if (!s || s.history.find(e => e.datum === datum && e.wert === wert)) return;
+            s.history.push({ datum, wert, notiz: iN >= 0 ? String(row[iN]) : '' });
+          } else {
+            const c = b.components.find(c => c.name === name);
+            if (!c || c.history.find(e => e.datum === datum && e.wert === wert)) return;
+            c.history.push({ datum, wert, gewicht: iGew >= 0 ? String(row[iGew]) : '', preis: iP >= 0 ? String(row[iP]) : '', notiz: iN >= 0 ? String(row[iN]) : '' });
+          }
+          total++;
+        });
+      }
+
+      importSheet(wb.Sheets['Komponenten'], false);
+      importSheet(wb.Sheets['Einstellungen'], true);
+
+      if (total === 0) { alert('Keine neuen Einträge. Bike-Namen müssen exakt übereinstimmen.'); e.target.value = ''; return; }
+      saveState(false);
+      buildBikeLinks();
+      navigate('overview');
+      showToast(`${total} Einträge importiert ✓`);
+    } catch (err) {
+      alert('Fehler: ' + err.message);
+    }
+  };
+  r.readAsArrayBuffer(file);
+  e.target.value = '';
+}
+
 function exportJson() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const filename = `velodb_${new Date().toISOString().split('T')[0]}.json`;
