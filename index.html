@@ -227,7 +227,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
   <nav id="sidebar">
     <div class="sidebar-logo">
       <h1>VELO<span style="color:var(--text)">DB</span></h1>
-      <div><span>v1.0 · Bike Management</span></div>
+      <div><span>v1.1 · Bike Management</span></div>
     </div>
     <div class="nav-wrap">
       <div class="nav-label">Navigation</div>
@@ -393,7 +393,7 @@ let dndSetGrpNames=[];
 const KEY=‘velodb_v6’;
 let state=(()=>{try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch{}return null;})();
 if(!state){
-state={version:6,personalInfo:’’,bikes:[],geoDefs:defaultGeoDefs()};
+state={version:11,personalInfo:’’,bikes:[],geoDefs:defaultGeoDefs()};
 localStorage.setItem(KEY,JSON.stringify(state));
 }
 // migrate old data
