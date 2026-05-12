@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -260,67 +261,67 @@ const COMP_GROUPS=[
 
 // For each setting label, list which component names to show as reference
 const SETTING_COMP_MAP={
-  'Gabel Luftdruck':['Gabel'],
-  'Gabel Tokens':['Gabel'],
-  'Gabel Zugstufe':['Gabel'],
-  'Gabel Druckstufe':['Gabel'],
-  'Gabel Sag':['Gabel'],
-  'Dämpfer Luftdruck':['Dämpfer'],
-  'Dämpfer Tokens':['Dämpfer'],
-  'Dämpfer Zugstufe':['Dämpfer'],
-  'Dämpfer Druckstufe':['Dämpfer'],
-  'Dämpfer Sag':['Dämpfer'],
-  'Reifendruck vorne':['Reifen vorne','Ventil/Schlauch vorne'],
-  'Reifendruck hinten':['Reifen hinten','Ventil/Schlauch hinten']
+‘Gabel Luftdruck’:[‘Gabel’],
+‘Gabel Tokens’:[‘Gabel’],
+‘Gabel Zugstufe’:[‘Gabel’],
+‘Gabel Druckstufe’:[‘Gabel’],
+‘Gabel Sag’:[‘Gabel’],
+‘Dämpfer Luftdruck’:[‘Dämpfer’],
+‘Dämpfer Tokens’:[‘Dämpfer’],
+‘Dämpfer Zugstufe’:[‘Dämpfer’],
+‘Dämpfer Druckstufe’:[‘Dämpfer’],
+‘Dämpfer Sag’:[‘Dämpfer’],
+‘Reifendruck vorne’:[‘Reifen vorne’,‘Ventil/Schlauch vorne’],
+‘Reifendruck hinten’:[‘Reifen hinten’,‘Ventil/Schlauch hinten’]
 };
 
 const STD_SETTINGS=[
-  {label:'Gabel Luftdruck',unit:'PSI',group:'Gabel'},
-  {label:'Gabel Tokens',unit:'Stk.',group:'Gabel'},
-  {label:'Gabel Zugstufe',unit:'Klicks',group:'Gabel'},
-  {label:'Gabel Druckstufe',unit:'Klicks',group:'Gabel'},
-  {label:'Gabel Sag',unit:'mm',group:'Gabel'},
-  {label:'Dämpfer Luftdruck',unit:'PSI',group:'Dämpfer'},
-  {label:'Dämpfer Tokens',unit:'Stk.',group:'Dämpfer'},
-  {label:'Dämpfer Zugstufe',unit:'Klicks',group:'Dämpfer'},
-  {label:'Dämpfer Druckstufe',unit:'Klicks',group:'Dämpfer'},
-  {label:'Dämpfer Sag',unit:'mm',group:'Dämpfer'},
-  {label:'Reifendruck vorne',unit:'Bar',group:'Reifen'},
-  {label:'Reifendruck hinten',unit:'Bar',group:'Reifen'}
+{label:‘Gabel Luftdruck’,unit:‘PSI’,group:‘Gabel’},
+{label:‘Gabel Tokens’,unit:‘Stk.’,group:‘Gabel’},
+{label:‘Gabel Zugstufe’,unit:‘Klicks’,group:‘Gabel’},
+{label:‘Gabel Druckstufe’,unit:‘Klicks’,group:‘Gabel’},
+{label:‘Gabel Sag’,unit:‘mm’,group:‘Gabel’},
+{label:‘Dämpfer Luftdruck’,unit:‘PSI’,group:‘Dämpfer’},
+{label:‘Dämpfer Tokens’,unit:‘Stk.’,group:‘Dämpfer’},
+{label:‘Dämpfer Zugstufe’,unit:‘Klicks’,group:‘Dämpfer’},
+{label:‘Dämpfer Druckstufe’,unit:‘Klicks’,group:‘Dämpfer’},
+{label:‘Dämpfer Sag’,unit:‘mm’,group:‘Dämpfer’},
+{label:‘Reifendruck vorne’,unit:‘Bar’,group:‘Reifen’},
+{label:‘Reifendruck hinten’,unit:‘Bar’,group:‘Reifen’}
 ];
 
 function newBike(o={}){
-  return{id:uid(),status:'aktiv',marke:'',modell:'',typ:'',jahr:'',farbe:'',groesse:'',bezug:'',preis:'',federweg:'',gewichtGewogen:'',fotos:[],
-    aktuellerZustand:'',bemerkungen:'',
-    components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
-    settings:STD_SETTINGS.map(s=>({...s,isStandard:true,history:[]})),
-    todos:[],...o};
+return{id:uid(),status:‘aktiv’,marke:’’,modell:’’,typ:’’,jahr:’’,farbe:’’,groesse:’’,bezug:’’,preis:’’,federweg:’’,gewichtGewogen:’’,fotos:[],
+aktuellerZustand:’’,bemerkungen:’’,
+components:COMP_GROUPS.flatMap(g=>g.items.map(name=>({group:g.group,name,history:[],notVorhanden:false}))),
+settings:STD_SETTINGS.map(s=>({…s,isStandard:true,history:[]})),
+todos:[],…o};
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s||’’).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’)}
 function cur(h){return h&&h.length?h[h.length-1]:null}
-function fmtDate(d){try{return d?new Date(d).toLocaleDateString('de-CH'):''}catch{return d||''}}
-function today(){return new Date().toISOString().split('T')[0]}
-function vv(id){const el=document.getElementById(id);return el?el.value:''}
+function fmtDate(d){try{return d?new Date(d).toLocaleDateString(‘de-CH’):’’}catch{return d||’’}}
+function today(){return new Date().toISOString().split(‘T’)[0]}
+function vv(id){const el=document.getElementById(id);return el?el.value:’’}
 function lastPhoto(b){
-  if(!b.fotos||!b.fotos.length)return null;
-  const f=b.fotos[b.fotos.length-1];
-  return typeof f==='string'?f:f.data;
+if(!b.fotos||!b.fotos.length)return null;
+const f=b.fotos[b.fotos.length-1];
+return typeof f===‘string’?f:f.data;
 }
 function lastPhotoForDate(b,datumStr){
-  // newest photo whose datum <= datumStr, or first photo if none dated
-  if(!b.fotos||!b.fotos.length)return null;
-  const candidates=b.fotos.filter(f=>{
-    const d=typeof f==='string'?null:f.datum;
-    return !d||d<=datumStr;
-  });
-  if(!candidates.length)return null;
-  const f=candidates[candidates.length-1];
-  return typeof f==='string'?f:f.data;
+// newest photo whose datum <= datumStr, or first photo if none dated
+if(!b.fotos||!b.fotos.length)return null;
+const candidates=b.fotos.filter(f=>{
+const d=typeof f===‘string’?null:f.datum;
+return !d||d<=datumStr;
+});
+if(!candidates.length)return null;
+const f=candidates[candidates.length-1];
+return typeof f===‘string’?f:f.data;
 }
-function photoDate(f){return typeof f==='string'?null:f.datum;}
+function photoDate(f){return typeof f===‘string’?null:f.datum;}
 function compGroupOrder(comps){const seen=new Set(),o=[];comps.forEach(c=>{if(!seen.has(c.group)){seen.add(c.group);o.push(c.group);}});return o}
-function setGroupOrder(sets){const seen=new Set(),o=[];sets.forEach(s=>{const g=s.group||'Sonstige';if(!seen.has(g)){seen.add(g);o.push(g);}});return o}
+function setGroupOrder(sets){const seen=new Set(),o=[];sets.forEach(s=>{const g=s.group||‘Sonstige’;if(!seen.has(g)){seen.add(g);o.push(g);}});return o}
 
 // ================================================================
 // DND — group names in arrays to avoid HTML escaping issues
@@ -331,131 +332,132 @@ let dndSetGrpNames=[];
 // ================================================================
 // STATE
 // ================================================================
-const KEY='velodb_v1';
+const KEY=‘velodb_v1’;
 let state=(()=>{try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch{}return null;})();
 if(!state){
-  state={version:4,personalInfo:'',bikes:[]};
-  localStorage.setItem(KEY,JSON.stringify(state));
+state={version:4,personalInfo:’’,bikes:[]};
+localStorage.setItem(KEY,JSON.stringify(state));
 }
 // migrate old data
 state.bikes.forEach(b=>{
-  b.components.forEach(c=>{if(c.notVorhanden===undefined)c.notVorhanden=false;});
-  b.fotos=b.fotos.map(f=>typeof f==='string'?{data:f,datum:today()}:f);
-  if(b.aktuelleProbleme!==undefined&&b.aktuellerZustand===undefined){b.aktuellerZustand=b.aktuelleProbleme;delete b.aktuelleProbleme;}
+b.components.forEach(c=>{if(c.notVorhanden===undefined)c.notVorhanden=false;});
+b.fotos=b.fotos.map(f=>typeof f===‘string’?{data:f,datum:today()}:f);
+if(b.aktuelleProbleme!==undefined&&b.aktuellerZustand===undefined){b.aktuellerZustand=b.aktuelleProbleme;delete b.aktuelleProbleme;}
 });
 
 // ================================================================
 // PERSISTENCE / AUTOSAVE
 // ================================================================
 let dirtyField=null,dirtyTimer=null;
-function saveState(c=true){localStorage.setItem(KEY,JSON.stringify(state));dirtyField=null;if(dirtyTimer)clearTimeout(dirtyTimer);hideBanner();if(c)showToast('Gespeichert ✓')}
-function markDirty(l){dirtyField=l;if(dirtyTimer)clearTimeout(dirtyTimer);dirtyTimer=setTimeout(()=>{document.getElementById('sb-info').textContent='"'+l+'" wurde verändert.';document.getElementById('save-banner').style.display='block';},3*60*1000)}
-function hideBanner(){document.getElementById('save-banner').style.display='none'}
+function saveState(c=true){localStorage.setItem(KEY,JSON.stringify(state));dirtyField=null;if(dirtyTimer)clearTimeout(dirtyTimer);hideBanner();if(c)showToast(‘Gespeichert ✓’)}
+function markDirty(l){dirtyField=l;if(dirtyTimer)clearTimeout(dirtyTimer);dirtyTimer=setTimeout(()=>{document.getElementById(‘sb-info’).textContent=’”’+l+’” wurde verändert.’;document.getElementById(‘save-banner’).style.display=‘block’;},3*60*1000)}
+function hideBanner(){document.getElementById(‘save-banner’).style.display=‘none’}
 function doSave(){saveState(true)}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2200)}
+function showToast(msg){const t=document.getElementById(‘toast’);t.textContent=msg;t.style.opacity=‘1’;setTimeout(()=>t.style.opacity=‘0’,2200)}
 
 // ================================================================
 // DRAG & DROP
 // ================================================================
 let dnd=null;
-const HSVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>';
+const HSVG=’<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>’;
 
 function startDrag(e,type,idx,grpIdx){
-  e.preventDefault();e.stopPropagation();
-  const handle=e.currentTarget;
-  const row=handle.closest('[data-dnd-type]');
-  if(!row)return;
-  try{handle.setPointerCapture(e.pointerId);}catch(_){}
-  const rect=row.getBoundingClientRect();
-  const ghost=row.cloneNode(true);
-  ghost.id='dnd-ghost';
-  Object.assign(ghost.style,{position:'fixed',top:rect.top+'px',left:rect.left+'px',width:rect.width+'px',zIndex:'9999',pointerEvents:'none',opacity:'.88',boxShadow:'0 8px 28px rgba(0,0,0,.7)',background:'var(--surface2)',border:'1.5px solid var(--accent)',borderRadius:'8px'});
-  document.body.appendChild(ghost);
-  row.classList.add('dnd-dragging');
-  dnd={type,fromIdx:idx,toIdx:idx,grpIdx,row,handle,ghostBaseTop:rect.top,startY:e.clientY};
-  handle.addEventListener('pointermove',dndMove,{passive:false});
-  handle.addEventListener('pointerup',dndEnd);
-  handle.addEventListener('pointercancel',dndEnd);
+e.preventDefault();e.stopPropagation();
+const handle=e.currentTarget;
+const row=handle.closest(’[data-dnd-type]’);
+if(!row)return;
+try{handle.setPointerCapture(e.pointerId);}catch(_){}
+const rect=row.getBoundingClientRect();
+const ghost=row.cloneNode(true);
+ghost.id=‘dnd-ghost’;
+Object.assign(ghost.style,{position:‘fixed’,top:rect.top+‘px’,left:rect.left+‘px’,width:rect.width+‘px’,zIndex:‘9999’,pointerEvents:‘none’,opacity:’.88’,boxShadow:‘0 8px 28px rgba(0,0,0,.7)’,background:‘var(–surface2)’,border:‘1.5px solid var(–accent)’,borderRadius:‘8px’});
+document.body.appendChild(ghost);
+row.classList.add(‘dnd-dragging’);
+dnd={type,fromIdx:idx,toIdx:idx,grpIdx,row,handle,ghostBaseTop:rect.top,startY:e.clientY};
+handle.addEventListener(‘pointermove’,dndMove,{passive:false});
+handle.addEventListener(‘pointerup’,dndEnd);
+handle.addEventListener(‘pointercancel’,dndEnd);
 }
 function dndMove(e){
-  if(!dnd)return;e.preventDefault();
-  const g=document.getElementById('dnd-ghost');
-  if(g)g.style.top=(dnd.ghostBaseTop+(e.clientY-dnd.startY))+'px';
-  if(g)g.style.visibility='hidden';
-  const els=document.elementsFromPoint(e.clientX,e.clientY);
-  if(g)g.style.visibility='';
-  document.querySelectorAll('.dnd-over').forEach(el=>el.classList.remove('dnd-over'));
-  for(const el of els){
-    const t=el.closest('[data-dnd-type="'+dnd.type+'"]');
-    if(t&&t!==dnd.row){t.classList.add('dnd-over');dnd.toIdx=parseInt(t.dataset.dndIdx);break;}
-  }
+if(!dnd)return;e.preventDefault();
+const g=document.getElementById(‘dnd-ghost’);
+if(g)g.style.top=(dnd.ghostBaseTop+(e.clientY-dnd.startY))+‘px’;
+if(g)g.style.visibility=‘hidden’;
+const els=document.elementsFromPoint(e.clientX,e.clientY);
+if(g)g.style.visibility=’’;
+document.querySelectorAll(’.dnd-over’).forEach(el=>el.classList.remove(‘dnd-over’));
+for(const el of els){
+const t=el.closest(’[data-dnd-type=”’+dnd.type+’”]’);
+if(t&&t!==dnd.row){t.classList.add(‘dnd-over’);dnd.toIdx=parseInt(t.dataset.dndIdx);break;}
+}
 }
 function dndEnd(e){
-  if(!dnd)return;
-  dnd.handle.removeEventListener('pointermove',dndMove);
-  dnd.handle.removeEventListener('pointerup',dndEnd);
-  dnd.handle.removeEventListener('pointercancel',dndEnd);
-  const g=document.getElementById('dnd-ghost');if(g)g.remove();
-  dnd.row.classList.remove('dnd-dragging');
-  document.querySelectorAll('.dnd-over').forEach(el=>el.classList.remove('dnd-over'));
-  if(dnd.toIdx!==dnd.fromIdx)doReorder(dnd.type,dnd.fromIdx,dnd.toIdx,dnd.grpIdx);
-  dnd=null;
+if(!dnd)return;
+dnd.handle.removeEventListener(‘pointermove’,dndMove);
+dnd.handle.removeEventListener(‘pointerup’,dndEnd);
+dnd.handle.removeEventListener(‘pointercancel’,dndEnd);
+const g=document.getElementById(‘dnd-ghost’);if(g)g.remove();
+dnd.row.classList.remove(‘dnd-dragging’);
+document.querySelectorAll(’.dnd-over’).forEach(el=>el.classList.remove(‘dnd-over’));
+if(dnd.toIdx!==dnd.fromIdx)doReorder(dnd.type,dnd.fromIdx,dnd.toIdx,dnd.grpIdx);
+dnd=null;
 }
 function doReorder(type,from,to,grpIdx){
-  const b=getBike(bikeId);
-  if(type==='comp-group'){
-    const gs=[...dndCompGrpNames];const[g]=gs.splice(from,1);gs.splice(to,0,g);
-    const old=[...b.components];b.components=gs.flatMap(gn=>old.filter(c=>c.group===gn));
-    markDirty('Gruppen');switchTab('komponenten');
-  }else if(type==='comp'){
-    const grpName=dndCompGrpNames[grpIdx];if(!grpName)return;
-    const old=[...b.components];const gc=old.filter(c=>c.group===grpName);
-    const[item]=gc.splice(from,1);gc.splice(to,0,item);
-    const gs=compGroupOrder(old);b.components=gs.flatMap(g=>g===grpName?gc:old.filter(c=>c.group===g));
-    markDirty('Komponenten');switchTab('komponenten');
-  }else if(type==='setting-group'){
-    const gs=[...dndSetGrpNames];const[g]=gs.splice(from,1);gs.splice(to,0,g);
-    const old=[...b.settings];b.settings=gs.flatMap(gn=>old.filter(s=>(s.group||'Sonstige')===gn));
-    markDirty('Einstellungen');switchTab('einstellungen');
-  }else if(type==='setting'){
-    const grpName=dndSetGrpNames[grpIdx];if(!grpName)return;
-    const old=[...b.settings];const gc=old.filter(s=>(s.group||'Sonstige')===grpName);
-    const[item]=gc.splice(from,1);gc.splice(to,0,item);
-    const gs=setGroupOrder(old);b.settings=gs.flatMap(g=>g===grpName?gc:old.filter(s=>(s.group||'Sonstige')===g));
-    markDirty('Einstellungen');switchTab('einstellungen');
-  }
+const b=getBike(bikeId);
+if(type===‘comp-group’){
+const gs=[…dndCompGrpNames];const[g]=gs.splice(from,1);gs.splice(to,0,g);
+const old=[…b.components];b.components=gs.flatMap(gn=>old.filter(c=>c.group===gn));
+markDirty(‘Gruppen’);switchTab(‘komponenten’);
+}else if(type===‘comp’){
+const grpName=dndCompGrpNames[grpIdx];if(!grpName)return;
+const old=[…b.components];const gc=old.filter(c=>c.group===grpName);
+const[item]=gc.splice(from,1);gc.splice(to,0,item);
+const gs=compGroupOrder(old);b.components=gs.flatMap(g=>g===grpName?gc:old.filter(c=>c.group===g));
+markDirty(‘Komponenten’);switchTab(‘komponenten’);
+}else if(type===‘setting-group’){
+const gs=[…dndSetGrpNames];const[g]=gs.splice(from,1);gs.splice(to,0,g);
+const old=[…b.settings];b.settings=gs.flatMap(gn=>old.filter(s=>(s.group||‘Sonstige’)===gn));
+markDirty(‘Einstellungen’);switchTab(‘einstellungen’);
+}else if(type===‘setting’){
+const grpName=dndSetGrpNames[grpIdx];if(!grpName)return;
+const old=[…b.settings];const gc=old.filter(s=>(s.group||‘Sonstige’)===grpName);
+const[item]=gc.splice(from,1);gc.splice(to,0,item);
+const gs=setGroupOrder(old);b.settings=gs.flatMap(g=>g===grpName?gc:old.filter(s=>(s.group||‘Sonstige’)===g));
+markDirty(‘Einstellungen’);switchTab(‘einstellungen’);
+}
 }
 
 // ================================================================
 // ROUTER
 // ================================================================
-let view='overview',bikeId=null,tab='info',filter='aktiv',cmpIds=['',''];
-function navigate(v,id=null,t='info'){
-  view=v;bikeId=id;tab=t;
-  document.querySelectorAll('.nav-item[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===v));
-  buildBikeLinks();render();window.scrollTo(0,0);
+let view=‘overview’,bikeId=null,tab=‘info’,filter=‘aktiv’,cmpIds=[’’,’’];
+function navigate(v,id=null,t=‘info’){
+view=v;bikeId=id;tab=t;
+document.querySelectorAll(’.nav-item[data-view]’).forEach(el=>el.classList.toggle(‘active’,el.dataset.view===v));
+buildBikeLinks();render();window.scrollTo(0,0);
 }
 function buildBikeLinks(){
-  const el=document.getElementById('bike-links');if(!el)return;
-  const active=state.bikes.filter(b=>b.status==='aktiv');
-  el.innerHTML=active.map(b=>`<div class="nav-item bike-link ${bikeId===b.id&&view==='bike'?'active':''}" onclick="navigate('bike','${b.id}')"><span class="bike-dot"></span>${esc(b.marke)} ${esc(b.modell)||'Unbenannt'}</div>`).join('');
+const el=document.getElementById(‘bike-links’);if(!el)return;
+const active=state.bikes.filter(b=>b.status===‘aktiv’);
+el.innerHTML=active.map(b=>`<div class="nav-item bike-link ${bikeId===b.id&&view==='bike'?'active':''}" onclick="navigate('bike','${b.id}')"><span class="bike-dot"></span>${esc(b.marke)} ${esc(b.modell)||'Unbenannt'}</div>`).join(’’);
 }
 
 // ================================================================
 // RENDER
 // ================================================================
 function render(){
-  const el=document.getElementById('view');
-  if(view==='overview')el.innerHTML=renderOverview();
-  else if(view==='bike')el.innerHTML=renderDetail();
-  else if(view==='compare')el.innerHTML=renderCompare();
-  else if(view==='personal')el.innerHTML=renderPersonal();
-  attachListeners();
+const el=document.getElementById(‘view’);
+if(view===‘overview’)el.innerHTML=renderOverview();
+else if(view===‘bike’)el.innerHTML=renderDetail();
+else if(view===‘compare’)el.innerHTML=renderCompare();
+else if(view===‘personal’)el.innerHTML=renderPersonal();
+attachListeners();
 }
 
 function renderOverview(){
-  const bikes=state.bikes.filter(b=>filter==='alle'?true:b.status===filter);
-  return`<div class="topbar"><div class="topbar-title">Meine Bikes</div><div class="topbar-actions"><button class="btn btn-primary btn-sm" onclick="addBike()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Neues Bike</button></div></div>
+const bikes=state.bikes.filter(b=>filter===‘alle’?true:b.status===filter);
+return`<div class="topbar"><div class="topbar-title">Meine Bikes</div><div class="topbar-actions"><button class="btn btn-primary btn-sm" onclick="addBike()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Neues Bike</button></div></div>
+
   <div class="content">
     <div class="filter-bar"><div class="filter-tabs"><div class="filter-tab ${filter==='aktiv'?'active':''}" onclick="setFilter('aktiv')">Aktiv</div><div class="filter-tab ${filter==='ausgemustert'?'active':''}" onclick="setFilter('ausgemustert')">Ausgemustert</div><div class="filter-tab ${filter==='alle'?'active':''}" onclick="setFilter('alle')">Alle (${state.bikes.length})</div></div></div>
     ${bikes.length===0?`<div class="empty-state"><h3>Keine Bikes</h3><p>Füge ein neues Bike hinzu oder ändere den Filter.</p></div>`:`<div class="bikes-grid">${bikes.map(bikeCard).join('')}</div>`}
@@ -463,21 +465,22 @@ function renderOverview(){
 }
 
 function bikeCard(b){
-  const p=lastPhoto(b);const w=b.gewichtGewogen?(parseInt(b.gewichtGewogen)/1000).toFixed(2)+' kg':null;
-  return`<div class="bike-card" onclick="navigate('bike','${b.id}')">
-    <div class="bike-card-photo">${p?`<img src="${p}" alt="">`:`<div class="no-photo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>Kein Foto</div>`}<div class="bike-status-badge status-${b.status}">${b.status}</div></div>
-    <div class="bike-card-body"><div class="bike-card-brand">${esc(b.marke)}</div><div class="bike-card-model">${esc(b.modell)||'Unbenannt'}</div>
-    <div class="bike-meta-row"><span class="bike-meta-chip">${b.typ?'🏔 '+esc(b.typ):''}</span> <span class="bike-meta-chip">${b.jahr?'📅 '+esc(b.jahr):''}</span> <span class="bike-meta-chip">${b.federweg?'↕ '+esc(b.federweg):''}</span> <span class="bike-meta-chip">${w?'⚖ '+w:''}</span></div></div>
+const p=lastPhoto(b);const w=b.gewichtGewogen?(parseInt(b.gewichtGewogen)/1000).toFixed(2)+’ kg’:null;
+return`<div class="bike-card" onclick="navigate('bike','${b.id}')"> <div class="bike-card-photo">${p?`<img src="${p}" alt="">`:`<div class="no-photo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>Kein Foto</div>`}<div class="bike-status-badge status-${b.status}">${b.status}</div></div>
+<div class="bike-card-body"><div class="bike-card-brand">${esc(b.marke)}</div><div class="bike-card-model">${esc(b.modell)||‘Unbenannt’}</div>
+<div class="bike-meta-row"><span class="bike-meta-chip">${b.typ?‘🏔 ‘+esc(b.typ):’’}</span> <span class="bike-meta-chip">${b.jahr?‘📅 ‘+esc(b.jahr):’’}</span> <span class="bike-meta-chip">${b.federweg?‘↕ ‘+esc(b.federweg):’’}</span> <span class="bike-meta-chip">${w?‘⚖ ‘+w:’’}</span></div></div>
+
   </div>`;
 }
 
 function renderDetail(){
-  const b=getBike(bikeId);if(!b)return'<div class="content">Nicht gefunden.</div>';
-  const p=lastPhoto(b);const todosOpen=b.todos.filter(t=>!t.done).length;
-  const TABS=[{id:'info',l:'Info'},{id:'komponenten',l:'Komponenten'},{id:'einstellungen',l:'Einstellungen'},{id:'todos',l:`ToDo${todosOpen?` (${todosOpen})`:''}`},{id:'zeitstrahl',l:'Zeitstrahl'}];
-  return`<div class="topbar">
-    <div style="display:flex;align-items:center;gap:13px"><div class="back-btn" onclick="navigate('overview')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>Zurück</div><div class="topbar-title">${esc(b.marke)} ${esc(b.modell)}</div></div>
-    <div class="topbar-actions"><button class="btn btn-secondary btn-sm" onclick="retireBike('${b.id}')">${b.status==='aktiv'?'Ausmustern':'Reaktivieren'}</button><button class="btn btn-danger btn-sm" onclick="deleteBike('${b.id}')">Löschen</button><button class="btn btn-primary btn-sm" onclick="doSave()">Speichern</button></div>
+const b=getBike(bikeId);if(!b)return’<div class="content">Nicht gefunden.</div>’;
+const p=lastPhoto(b);const todosOpen=b.todos.filter(t=>!t.done).length;
+const TABS=[{id:‘info’,l:‘Info’},{id:‘komponenten’,l:‘Komponenten’},{id:‘einstellungen’,l:‘Einstellungen’},{id:‘todos’,l:`ToDo${todosOpen?` (${todosOpen})`:''}`},{id:‘zeitstrahl’,l:‘Zeitstrahl’}];
+return`<div class="topbar">
+<div style="display:flex;align-items:center;gap:13px"><div class="back-btn" onclick="navigate('overview')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>Zurück</div><div class="topbar-title">${esc(b.marke)} ${esc(b.modell)}</div></div>
+<div class="topbar-actions"><button class="btn btn-secondary btn-sm" onclick="retireBike('${b.id}')">${b.status===‘aktiv’?‘Ausmustern’:‘Reaktivieren’}</button><button class="btn btn-danger btn-sm" onclick="deleteBike('${b.id}')">Löschen</button><button class="btn btn-primary btn-sm" onclick="doSave()">Speichern</button></div>
+
   </div>
   <div class="bike-hero">
     <div class="hero-photo" onclick="document.getElementById('file-photo').click()" title="Foto hinzufügen">${p?`<img src="${p}" alt="">`:`<span style="text-align:center;padding:5px;font-size:11px">+ Foto</span>`}</div>
@@ -502,14 +505,13 @@ function renderTab(b){
 }
 
 function tabInfo(b){
-  const fields=[{f:'marke',l:'Marke'},{f:'modell',l:'Modell'},{f:'typ',l:'Typ',ph:'z.B. Enduro, Trail, XC…'},{f:'jahr',l:'Modelljahr'},{f:'farbe',l:'Farbe'},{f:'groesse',l:'Grösse',ph:'z.B. L, XL, 19.5"…'},{f:'federweg',l:'Federweg v/h (mm)',ph:'z.B. 160/150'},{f:'gewichtGewogen',l:'Gewicht gewogen (g)',ph:'z.B. 15470',type:'number'},{f:'bezug',l:'Bezug',ph:'Händler / Privat…'},{f:'preis',l:'Kaufpreis (CHF)'}];
-  return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px">
-      <div class="form-grid">${fields.map(({f,l,ph,type})=>`<div class="form-group"><label class="form-label">${l}</label><input class="form-input" type="${type||'text'}" value="${esc(b[f])}" data-field="${f}" data-label="${l}" placeholder="${ph||''}"></div>`).join('')}</div>
-      <hr class="div">
-      <div class="form-group"><label class="form-label">Aktueller Zustand</label><textarea class="form-input" rows="2" data-field="aktuellerZustand" data-label="Aktueller Zustand" placeholder="z.B. Alles i.O., Schaltung hakelt…">${esc(b.aktuellerZustand)}</textarea></div>
-      <div class="form-group"><label class="form-label">Bemerkungen</label><textarea class="form-input" rows="3" data-field="bemerkungen" data-label="Bemerkungen">${esc(b.bemerkungen)}</textarea></div>
-    </div>
+const fields=[{f:‘marke’,l:‘Marke’},{f:‘modell’,l:‘Modell’},{f:‘typ’,l:‘Typ’,ph:‘z.B. Enduro, Trail, XC…’},{f:‘jahr’,l:‘Modelljahr’},{f:‘farbe’,l:‘Farbe’},{f:‘groesse’,l:‘Grösse’,ph:‘z.B. L, XL, 19.5”…’},{f:‘federweg’,l:‘Federweg v/h (mm)’,ph:‘z.B. 160/150’},{f:‘gewichtGewogen’,l:‘Gewicht gewogen (g)’,ph:‘z.B. 15470’,type:‘number’},{f:‘bezug’,l:‘Bezug’,ph:‘Händler / Privat…’},{f:‘preis’,l:‘Kaufpreis (CHF)’}];
+return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div></div> <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px"> <div class="form-grid">${fields.map(({f,l,ph,type})=>`<div class="form-group"><label class="form-label">${l}</label><input class="form-input" type="${type||'text'}" value="${esc(b[f])}" data-field="${f}" data-label="${l}" placeholder="${ph||''}"></div>`).join(’’)}</div>
+<hr class="div">
+<div class="form-group"><label class="form-label">Aktueller Zustand</label><textarea class="form-input" rows="2" data-field="aktuellerZustand" data-label="Aktueller Zustand" placeholder="z.B. Alles i.O., Schaltung hakelt…">${esc(b.aktuellerZustand)}</textarea></div>
+<div class="form-group"><label class="form-label">Bemerkungen</label><textarea class="form-input" rows="3" data-field="bemerkungen" data-label="Bemerkungen">${esc(b.bemerkungen)}</textarea></div>
+</div>
+
   </div>
   <div class="section"><div class="section-header"><div class="section-title">Fotos</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-photo').click()">+ Foto</button></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px">
@@ -520,68 +522,47 @@ function tabInfo(b){
 }
 
 function tabKomponenten(b){
-  const groups={};b.components.forEach(c=>{if(!groups[c.group])groups[c.group]=[];groups[c.group].push(c);});
-  const gNames=compGroupOrder(b.components);
-  dndCompGrpNames=gNames;
-  const totalG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
-  return`<div class="section">
-    <div class="section-header"><div class="section-title">Komponenten</div><span style="font-family:'DM Mono',monospace;font-size:11.5px;color:var(--muted)">Gesamt: <strong style="color:var(--text)">${totalG>0?(totalG/1000).toFixed(3)+' kg':'—'}</strong></span></div>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:11px">Gruppen und Zeilen per <strong>≡</strong> Drag & Drop sortieren</p>
-    ${gNames.map((g,gi)=>{
-      const comps=groups[g]||[];
-      return`<div class="group-card" data-dnd-type="comp-group" data-dnd-idx="${gi}">
-        <div class="group-title-row"><div class="drag-handle" data-dnd-type="comp-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'comp-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
-        ${comps.map((c,ci)=>{const h=cur(c.history);const fi=b.components.indexOf(c);
-          return`<div class="comp-row${c.notVorhanden?' not-available':''}" data-dnd-type="comp" data-dnd-idx="${ci}" onclick="openCompModal(${fi})">
-            <div class="drag-handle" data-dnd-type="comp" data-dnd-idx="${ci}" onpointerdown="startDrag(event,'comp',${ci},${gi});event.stopPropagation()">${HSVG}</div>
-            <div class="comp-name">${esc(c.name)}</div>
-            <div class="comp-val ${c.notVorhanden?'na':!h?'empty':''}">${c.notVorhanden?'Nicht vorhanden':h?esc(h.wert):'Nicht erfasst'}</div>
-            <div class="comp-num">${!c.notVorhanden&&h&&h.gewicht?h.gewicht+'g':''}</div>
-            <div class="comp-num">${!c.notVorhanden&&h&&h.preis?'CHF '+h.preis:''}</div>
-            ${c.notVorhanden?`<div class="na-badge">n/v</div>`:c.history.length>1?`<div class="hist-badge">${c.history.length}×</div>`:'<div></div>'}
-          </div>`;
-        }).join('')}
-      </div>`;
-    }).join('')}
+const groups={};b.components.forEach(c=>{if(!groups[c.group])groups[c.group]=[];groups[c.group].push(c);});
+const gNames=compGroupOrder(b.components);
+dndCompGrpNames=gNames;
+const totalG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
+return`<div class="section"> <div class="section-header"><div class="section-title">Komponenten</div><span style="font-family:'DM Mono',monospace;font-size:11.5px;color:var(--muted)">Gesamt: <strong style="color:var(--text)">${totalG>0?(totalG/1000).toFixed(3)+' kg':'—'}</strong></span></div> <p style="font-size:11px;color:var(--muted);margin-bottom:11px">Gruppen und Zeilen per <strong>≡</strong> Drag & Drop sortieren</p> ${gNames.map((g,gi)=>{ const comps=groups[g]||[]; return`<div class="group-card" data-dnd-type="comp-group" data-dnd-idx="${gi}">
+<div class="group-title-row"><div class="drag-handle" data-dnd-type="comp-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'comp-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+${comps.map((c,ci)=>{const h=cur(c.history);const fi=b.components.indexOf(c);
+return`<div class="comp-row${c.notVorhanden?' not-available':''}" data-dnd-type="comp" data-dnd-idx="${ci}" onclick="openCompModal(${fi})"> <div class="drag-handle" data-dnd-type="comp" data-dnd-idx="${ci}" onpointerdown="startDrag(event,'comp',${ci},${gi});event.stopPropagation()">${HSVG}</div> <div class="comp-name">${esc(c.name)}</div> <div class="comp-val ${c.notVorhanden?'na':!h?'empty':''}">${c.notVorhanden?'Nicht vorhanden':h?esc(h.wert):'Nicht erfasst'}</div> <div class="comp-num">${!c.notVorhanden&&h&&h.gewicht?h.gewicht+'g':''}</div> <div class="comp-num">${!c.notVorhanden&&h&&h.preis?'CHF '+h.preis:''}</div> ${c.notVorhanden?`<div class="na-badge">n/v</div>`:c.history.length>1?`<div class="hist-badge">${c.history.length}×</div>`:'<div></div>'} </div>`;
+}).join(’’)}
+</div>`;
+}).join(’’)}
+
   </div>`;
 }
 
 function tabEinstellungen(b){
-  const groups={};b.settings.forEach(s=>{const g=s.group||'Sonstige';if(!groups[g])groups[g]=[];groups[g].push(s);});
-  const gNames=setGroupOrder(b.settings);
-  dndSetGrpNames=gNames;
-  return`<div class="section">
-    <div class="section-header"><div class="section-title">Einstellungen</div><button class="btn btn-secondary btn-sm" onclick="addCustomSetting('${b.id}')">+ Eigenes Feld</button></div>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:11px">Gruppen und Felder per <strong>≡</strong> Drag & Drop sortieren</p>
-    ${gNames.map((g,gi)=>{
-      const settings=groups[g]||[];
-      return`<div class="group-card" data-dnd-type="setting-group" data-dnd-idx="${gi}">
-        <div class="group-title-row"><div class="drag-handle" data-dnd-type="setting-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'setting-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
-        ${settings.map((s,si)=>{const gi2=b.settings.indexOf(s);const h=cur(s.history);
-          return`<div class="setting-row" data-dnd-type="setting" data-dnd-idx="${si}">
-            <div class="drag-handle" data-dnd-type="setting" data-dnd-idx="${si}" onpointerdown="startDrag(event,'setting',${si},${gi});event.stopPropagation()">${HSVG}</div>
-            <div class="setting-label">${esc(s.label)}${s.unit?` <span style="font-size:9.5px;font-weight:400">(${esc(s.unit)})</span>`:''}</div>
-            <div class="setting-val ${!h?'empty':''}" onclick="openSetModal(${gi2})">${h?esc(h.wert)+(s.unit?' '+s.unit:''):'— klicken'}</div>
-            <div class="setting-actions">${s.history.length>1?`<span class="hist-badge">${s.history.length}×</span>`:''}<button class="btn btn-ghost btn-sm" onclick="openSetModal(${gi2})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>${!s.isStandard?`<button class="btn btn-danger btn-sm" onclick="delCustomSetting(${gi2})">✕</button>`:''}</div>
-          </div>`;
-        }).join('')}
-      </div>`;
-    }).join('')}
+const groups={};b.settings.forEach(s=>{const g=s.group||‘Sonstige’;if(!groups[g])groups[g]=[];groups[g].push(s);});
+const gNames=setGroupOrder(b.settings);
+dndSetGrpNames=gNames;
+return`<div class="section"> <div class="section-header"><div class="section-title">Einstellungen</div><button class="btn btn-secondary btn-sm" onclick="addCustomSetting('${b.id}')">+ Eigenes Feld</button></div> <p style="font-size:11px;color:var(--muted);margin-bottom:11px">Gruppen und Felder per <strong>≡</strong> Drag & Drop sortieren</p> ${gNames.map((g,gi)=>{ const settings=groups[g]||[]; return`<div class="group-card" data-dnd-type="setting-group" data-dnd-idx="${gi}">
+<div class="group-title-row"><div class="drag-handle" data-dnd-type="setting-group" data-dnd-idx="${gi}" onpointerdown="startDrag(event,'setting-group',${gi},${gi})">${HSVG}</div><div class="group-title-text">${esc(g)}</div></div>
+${settings.map((s,si)=>{const gi2=b.settings.indexOf(s);const h=cur(s.history);
+return`<div class="setting-row" data-dnd-type="setting" data-dnd-idx="${si}"> <div class="drag-handle" data-dnd-type="setting" data-dnd-idx="${si}" onpointerdown="startDrag(event,'setting',${si},${gi});event.stopPropagation()">${HSVG}</div> <div class="setting-label">${esc(s.label)}${s.unit?` <span style="font-size:9.5px;font-weight:400">(${esc(s.unit)})</span>`:''}</div> <div class="setting-val ${!h?'empty':''}" onclick="openSetModal(${gi2})">${h?esc(h.wert)+(s.unit?' '+s.unit:''):'— klicken'}</div> <div class="setting-actions">${s.history.length>1?`<span class="hist-badge">${s.history.length}×</span>`:''}<button class="btn btn-ghost btn-sm" onclick="openSetModal(${gi2})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>${!s.isStandard?`<button class="btn btn-danger btn-sm" onclick="delCustomSetting(${gi2})">✕</button>`:''}</div> </div>`;
+}).join(’’)}
+</div>`;
+}).join(’’)}
+
   </div>`;
 }
 
 function tabTodos(b){
-  return`<div class="section"><div class="section-header"><div class="section-title">ToDo</div><button class="btn btn-secondary btn-sm" onclick="addTodo('${b.id}')">+ Aufgabe</button></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-      ${b.todos.length===0?`<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Keine offenen Aufgaben ✓</div>`
-      :b.todos.map((t,i)=>`<div class="todo-item"><div class="todo-check ${t.done?'done':''}" onclick="toggleTodo('${b.id}',${i})">${t.done?`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>`:''}</div><div class="todo-text ${t.done?'done':''}">${esc(t.text)}</div><button class="btn btn-ghost btn-sm" onclick="delTodo('${b.id}',${i})" style="padding:3px;color:var(--muted)">✕</button></div>`).join('')}
-    </div>
+return`<div class="section"><div class="section-header"><div class="section-title">ToDo</div><button class="btn btn-secondary btn-sm" onclick="addTodo('${b.id}')">+ Aufgabe</button></div> <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden"> ${b.todos.length===0?`<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Keine offenen Aufgaben ✓</div>` :b.todos.map((t,i)=>`<div class="todo-item"><div class="todo-check ${t.done?'done':''}" onclick="toggleTodo('${b.id}',${i})">${t.done?`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>`:’’}</div><div class="todo-text ${t.done?'done':''}">${esc(t.text)}</div><button class="btn btn-ghost btn-sm" onclick="delTodo('${b.id}',${i})" style="padding:3px;color:var(--muted)">✕</button></div>`).join(’’)}
+</div>
+
   </div>`;
 }
 
 function renderCompare(){
-  const b1=cmpIds[0]?getBike(cmpIds[0]):null,b2=cmpIds[1]?getBike(cmpIds[1]):null;
-  return`<div class="topbar"><div class="topbar-title">Bike Vergleich</div></div>
+const b1=cmpIds[0]?getBike(cmpIds[0]):null,b2=cmpIds[1]?getBike(cmpIds[1]):null;
+return`<div class="topbar"><div class="topbar-title">Bike Vergleich</div></div>
+
   <div class="content">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:20px">
       <div class="form-group"><label class="form-label">Bike 1</label><select class="form-input" onchange="cmpIds[0]=this.value;render()"><option value="">— wählen —</option>${state.bikes.map(b=>`<option value="${b.id}"${cmpIds[0]===b.id?' selected':''}>${esc(b.marke)} ${esc(b.modell)}</option>`).join('')}</select></div>
@@ -620,7 +601,8 @@ function cmpTable(b1,b2){
 }
 
 function renderPersonal(){
-  return`<div class="topbar"><div class="topbar-title">Persönliche Infos</div><button class="btn btn-primary btn-sm" onclick="savePersonal()">Speichern</button></div>
+return`<div class="topbar"><div class="topbar-title">Persönliche Infos</div><button class="btn btn-primary btn-sm" onclick="savePersonal()">Speichern</button></div>
+
   <div class="content"><div class="section"><div class="section-header"><div class="section-title">Notizen & Körpermasse</div></div>
     <div class="rich-toolbar"><button class="rich-btn" onclick="document.execCommand('bold')"><b>B</b></button><button class="rich-btn" onclick="document.execCommand('italic')"><i>I</i></button><button class="rich-btn" onclick="document.execCommand('underline')"><u>U</u></button><button class="rich-btn" onclick="document.execCommand('insertUnorderedList')">• Liste</button><button class="rich-btn" onclick="document.execCommand('formatBlock',false,'h3')">H3</button><button class="rich-btn" onclick="document.execCommand('formatBlock',false,'p')">Normal</button></div>
     <div id="personal-editor" contenteditable="true" oninput="markDirty('Persönliche Infos')">${state.personalInfo||'<p>Hier kannst du persönliche Infos eintragen…</p>'}</div>
@@ -631,309 +613,284 @@ function renderPersonal(){
 // MODALS
 // ================================================================
 function makeHistHtml(entries,isSettings){
-  return[...entries].reverse().map((h,ri)=>{
-    const snap=isSettings&&h.kompSnapshot&&Object.keys(h.kompSnapshot).length?h.kompSnapshot:null;
-    const snapHtml=snap?Object.entries(snap).map(([k,v])=>`<div class="hist-kompsnap"><div class="hist-kompsnap-label">${esc(k)}</div>${esc(v)||'—'}</div>`).join(''):'';
-    return`<div class="hist-entry ${ri===0?'current':''}">
-      <div class="hist-date">${fmtDate(h.datum)||'Kein Datum'}</div>
-      <div class="hist-val">${esc(h.wert||'—')}</div>
-      <div class="hist-meta">${h.gewicht?`<span>⚖ ${esc(h.gewicht)} g</span>`:''} ${h.preis?`<span>💰 CHF ${esc(h.preis)}</span>`:''} ${h.notiz?`<span>📝 ${esc(h.notiz)}</span>`:''}</div>
-      ${snapHtml}
-    </div>`;
-  }).join('');
+return[…entries].reverse().map((h,ri)=>{
+const snap=isSettings&&h.kompSnapshot&&Object.keys(h.kompSnapshot).length?h.kompSnapshot:null;
+const snapHtml=snap?Object.entries(snap).map(([k,v])=>`<div class="hist-kompsnap"><div class="hist-kompsnap-label">${esc(k)}</div>${esc(v)||'—'}</div>`).join(’’):’’;
+return`<div class="hist-entry ${ri===0?'current':''}"> <div class="hist-date">${fmtDate(h.datum)||'Kein Datum'}</div> <div class="hist-val">${esc(h.wert||'—')}</div> <div class="hist-meta">${h.gewicht?`<span>⚖ ${esc(h.gewicht)} g</span>`:''} ${h.preis?`<span>💰 CHF ${esc(h.preis)}</span>`:''} ${h.notiz?`<span>📝 ${esc(h.notiz)}</span>`:''}</div> ${snapHtml} </div>`;
+}).join(’’);
 }
 function histSection(entries,isSettings){
-  if(!entries||!entries.length)return'';
-  const uid2='h'+Math.random().toString(36).slice(2);
-  return`<div class="hist-toggle" onclick="const c=document.getElementById('${uid2}');const o=c.style.display!=='none';c.style.display=o?'none':'block';this.querySelector('.hist-icon').style.transform=o?'rotate(0)':'rotate(90deg)'">
-    <span class="hist-icon">▶</span>Historie (${entries.length} ${entries.length===1?'Eintrag':'Einträge'})</div>
+if(!entries||!entries.length)return’’;
+const uid2=‘h’+Math.random().toString(36).slice(2);
+return`<div class="hist-toggle" onclick="const c=document.getElementById('${uid2}');const o=c.style.display!=='none';c.style.display=o?'none':'block';this.querySelector('.hist-icon').style.transform=o?'rotate(0)':'rotate(90deg)'">
+<span class="hist-icon">▶</span>Historie (${entries.length} ${entries.length===1?‘Eintrag’:‘Einträge’})</div>
+
   <div id="${uid2}" style="display:none;padding-top:8px">${makeHistHtml(entries,isSettings)}</div>`;
 }
 
 function getCompRefHtml(b,settingLabel){
-  const compNames=SETTING_COMP_MAP[settingLabel];
-  if(!compNames||!compNames.length)return'';
-  return compNames.map(cn=>{
-    const comp=b.components.find(c=>c.name===cn);
-    if(!comp)return'';
-    const h=cur(comp.history);
-    const isNA=comp.notVorhanden;
-    return`<div class="comp-ref-box">
-      <div class="comp-ref-label">${esc(cn)}</div>
-      <div class="comp-ref-val ${(!h&&!isNA)?'empty-ref':''}">${isNA?'Nicht vorhanden':h?esc(h.wert):'Noch nicht erfasst'}</div>
-      ${h&&h.datum&&!isNA?`<div style="font-size:11px;margin-top:4px;color:var(--muted)">📅 ${fmtDate(h.datum)}</div>`:''}
-    </div>`;
-  }).join('');
+const compNames=SETTING_COMP_MAP[settingLabel];
+if(!compNames||!compNames.length)return’’;
+return compNames.map(cn=>{
+const comp=b.components.find(c=>c.name===cn);
+if(!comp)return’’;
+const h=cur(comp.history);
+const isNA=comp.notVorhanden;
+return`<div class="comp-ref-box"> <div class="comp-ref-label">${esc(cn)}</div> <div class="comp-ref-val ${(!h&&!isNA)?'empty-ref':''}">${isNA?'Nicht vorhanden':h?esc(h.wert):'Noch nicht erfasst'}</div> ${h&&h.datum&&!isNA?`<div style="font-size:11px;margin-top:4px;color:var(--muted)">📅 ${fmtDate(h.datum)}</div>`:''} </div>`;
+}).join(’’);
 }
 
 // Collect current kompSnapshot for a setting before saving
 function buildKompSnapshot(b,settingLabel){
-  const compNames=SETTING_COMP_MAP[settingLabel];
-  if(!compNames)return{};
-  const snap={};
-  compNames.forEach(cn=>{
-    const comp=b.components.find(c=>c.name===cn);
-    if(!comp||comp.notVorhanden)return;
-    const h=cur(comp.history);
-    if(h)snap[cn]=h.wert;
-  });
-  return snap;
+const compNames=SETTING_COMP_MAP[settingLabel];
+if(!compNames)return{};
+const snap={};
+compNames.forEach(cn=>{
+const comp=b.components.find(c=>c.name===cn);
+if(!comp||comp.notVorhanden)return;
+const h=cur(comp.history);
+if(h)snap[cn]=h.wert;
+});
+return snap;
 }
 
 function openCompModal(fi){
-  const b=getBike(bikeId);const c=b.components[fi];if(!c)return;
-  const h=cur(c.history);
-  const naChecked=c.notVorhanden?'checked':'';
-  showModal('comp-modal',`
-    <div class="modal-header"><div><div class="modal-sub">${esc(c.group)}</div><div class="modal-title">${esc(c.name)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('comp-modal')">✕</button></div>
-    <div class="modal-body">
-      <div class="checkbox-row" onclick="toggleNotVorhanden(${fi})">
-        <input type="checkbox" id="nv-check" ${naChecked} onclick="event.stopPropagation();toggleNotVorhanden(${fi})">
-        <label for="nv-check">Nicht vorhanden (z.B. kein Dämpfer beim Hardtail)</label>
-      </div>
-      ${c.notVorhanden?`<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Diese Komponente ist als «nicht vorhanden» markiert.</div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Schliessen</button></div>`:
-      `<div class="cur-val-box"><div class="cur-val-label">Aktueller Stand</div><div class="cur-val-main ${!h?'empty':''}">${h?esc(h.wert):'Noch nicht erfasst'}</div>${h?`<div class="cur-val-meta">${h.gewicht?`<span>⚖ ${esc(h.gewicht)} g</span>`:''} ${h.preis?`<span>💰 CHF ${esc(h.preis)}</span>`:''} ${h.datum?`<span>📅 ${fmtDate(h.datum)}</span>`:''}</div>`:''}</div>
-      <hr class="div" style="margin-top:0">
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div>
-      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="cd" value="${today()}"></div>
-      <div class="form-group"><label class="form-label">Bezeichnung</label><textarea class="form-input" id="cw" rows="2" placeholder="z.B. Fox 38 Factory, 160mm…">${h?esc(h.wert):''}</textarea></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-group"><label class="form-label">Gewicht (g)</label><input class="form-input" type="number" id="cg" placeholder="z.B. 2180"></div>
-        <div class="form-group"><label class="form-label">Preis (CHF)</label><input class="form-input" type="number" id="cp" placeholder="z.B. 350"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="cn" placeholder="Optionale Bemerkung…"></div>
-      ${histSection(c.history,false)}
-      </div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveComp(${fi})">Eintrag hinzufügen</button></div>`}
-    `);
+const b=getBike(bikeId);const c=b.components[fi];if(!c)return;
+const h=cur(c.history);
+const naChecked=c.notVorhanden?‘checked’:’’;
+showModal(‘comp-modal’,` <div class="modal-header"><div><div class="modal-sub">${esc(c.group)}</div><div class="modal-title">${esc(c.name)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('comp-modal')">✕</button></div> <div class="modal-body"> <div class="checkbox-row" onclick="toggleNotVorhanden(${fi})"> <input type="checkbox" id="nv-check" ${naChecked} onclick="event.stopPropagation();toggleNotVorhanden(${fi})"> <label for="nv-check">Nicht vorhanden (z.B. kein Dämpfer beim Hardtail)</label> </div> ${c.notVorhanden?`<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Diese Komponente ist als «nicht vorhanden» markiert.</div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Schliessen</button></div>`: `<div class="cur-val-box"><div class="cur-val-label">Aktueller Stand</div><div class="cur-val-main ${!h?'empty':''}">${h?esc(h.wert):‘Noch nicht erfasst’}</div>${h?`<div class="cur-val-meta">${h.gewicht?`<span>⚖ ${esc(h.gewicht)} g</span>`:''} ${h.preis?`<span>💰 CHF ${esc(h.preis)}</span>`:''} ${h.datum?`<span>📅 ${fmtDate(h.datum)}</span>`:''}</div>`:’’}</div>
+<hr class="div" style="margin-top:0">
+<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div>
+<div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="cd" value="${today()}"></div>
+<div class="form-group"><label class="form-label">Bezeichnung</label><textarea class="form-input" id="cw" rows="2" placeholder="z.B. Fox 38 Factory, 160mm…">${h?esc(h.wert):’’}</textarea></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="form-group"><label class="form-label">Gewicht (g)</label><input class="form-input" type="number" id="cg" placeholder="z.B. 2180"></div>
+<div class="form-group"><label class="form-label">Preis (CHF)</label><input class="form-input" type="number" id="cp" placeholder="z.B. 350"></div>
+</div>
+<div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="cn" placeholder="Optionale Bemerkung…"></div>
+${histSection(c.history,false)}
+</div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comp-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveComp(${fi})">Eintrag hinzufügen</button></div>`} `);
 }
 
 function toggleNotVorhanden(fi){
-  const b=getBike(bikeId);const c=b.components[fi];
-  c.notVorhanden=!c.notVorhanden;
-  markDirty(c.name);closeModal('comp-modal');
-  openCompModal(fi);
-  switchTab('komponenten');
+const b=getBike(bikeId);const c=b.components[fi];
+c.notVorhanden=!c.notVorhanden;
+markDirty(c.name);closeModal(‘comp-modal’);
+openCompModal(fi);
+switchTab(‘komponenten’);
 }
 
 function saveComp(fi){
-  const b=getBike(bikeId);const c=b.components[fi];
-  if(!vv('cw').trim()){showToast('Bitte Bezeichnung eingeben');return;}
-  c.history.push({datum:vv('cd'),wert:vv('cw'),gewicht:vv('cg'),preis:vv('cp'),notiz:vv('cn')});
-  markDirty(c.name);closeModal('comp-modal');switchTab('komponenten');
+const b=getBike(bikeId);const c=b.components[fi];
+if(!vv(‘cw’).trim()){showToast(‘Bitte Bezeichnung eingeben’);return;}
+c.history.push({datum:vv(‘cd’),wert:vv(‘cw’),gewicht:vv(‘cg’),preis:vv(‘cp’),notiz:vv(‘cn’)});
+markDirty(c.name);closeModal(‘comp-modal’);switchTab(‘komponenten’);
 }
 
 function openSetModal(si){
-  const b=getBike(bikeId);const s=b.settings[si];if(!s)return;
-  const h=cur(s.history);const compRef=getCompRefHtml(b,s.label);
-  showModal('set-modal',`
-    <div class="modal-header"><div><div class="modal-sub">${esc(s.group||'Einstellung')}</div><div class="modal-title">${esc(s.label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('set-modal')">✕</button></div>
-    <div class="modal-body">
-      <div class="cur-val-box"><div class="cur-val-label">Aktueller Wert</div><div class="cur-val-main ${!h?'empty':''}" style="${h?'font-family:DM Mono,monospace;font-size:24px;font-weight:600':''}">${h?esc(h.wert)+(s.unit?' '+s.unit:''):'Noch nicht erfasst'}</div>${h?`<div class="cur-val-meta">${h.datum?`<span>📅 ${fmtDate(h.datum)}</span>`:''} ${h.notiz?`<span>📝 ${esc(h.notiz)}</span>`:''}</div>`:''}</div>
-      ${compRef}
-      <hr class="div" style="margin-top:0">
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div>
-      <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="sd" value="${today()}"></div>
-      <div class="form-group"><label class="form-label">Wert${s.unit?` (${esc(s.unit)})`:''}</label><input class="form-input" id="sw" placeholder="Wert eingeben…"></div>
-      <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="sn" placeholder="Optionale Bemerkung…"></div>
-      ${histSection(s.history,true)}
-    </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('set-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveSetting(${si})">Speichern</button></div>`);
+const b=getBike(bikeId);const s=b.settings[si];if(!s)return;
+const h=cur(s.history);const compRef=getCompRefHtml(b,s.label);
+showModal(‘set-modal’,` <div class="modal-header"><div><div class="modal-sub">${esc(s.group||'Einstellung')}</div><div class="modal-title">${esc(s.label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('set-modal')">✕</button></div> <div class="modal-body"> <div class="cur-val-box"><div class="cur-val-label">Aktueller Wert</div><div class="cur-val-main ${!h?'empty':''}" style="${h?'font-family:DM Mono,monospace;font-size:24px;font-weight:600':''}">${h?esc(h.wert)+(s.unit?' '+s.unit:''):'Noch nicht erfasst'}</div>${h?`<div class="cur-val-meta">${h.datum?`<span>📅 ${fmtDate(h.datum)}</span>`:’’} ${h.notiz?`<span>📝 ${esc(h.notiz)}</span>`:’’}</div>`:''}</div> ${compRef} <hr class="div" style="margin-top:0"> <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px">Neuen Wert erfassen</div> <div class="form-group"><label class="form-label">Datum</label><input class="form-input" type="date" id="sd" value="${today()}"></div> <div class="form-group"><label class="form-label">Wert${s.unit?` (${esc(s.unit)})`:''}</label><input class="form-input" id="sw" placeholder="Wert eingeben…"></div> <div class="form-group"><label class="form-label">Notiz</label><input class="form-input" id="sn" placeholder="Optionale Bemerkung…"></div> ${histSection(s.history,true)} </div> <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('set-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveSetting(${si})">Speichern</button></div>`);
 }
 
 function saveSetting(si){
-  const b=getBike(bikeId);const s=b.settings[si];
-  if(!vv('sw').trim()){showToast('Bitte Wert eingeben');return;}
-  const kompSnapshot=buildKompSnapshot(b,s.label);
-  s.history.push({datum:vv('sd'),wert:vv('sw'),notiz:vv('sn'),kompSnapshot});
-  markDirty(s.label);closeModal('set-modal');switchTab('einstellungen');
+const b=getBike(bikeId);const s=b.settings[si];
+if(!vv(‘sw’).trim()){showToast(‘Bitte Wert eingeben’);return;}
+const kompSnapshot=buildKompSnapshot(b,s.label);
+s.history.push({datum:vv(‘sd’),wert:vv(‘sw’),notiz:vv(‘sn’),kompSnapshot});
+markDirty(s.label);closeModal(‘set-modal’);switchTab(‘einstellungen’);
 }
 
 function showModal(id,html){
-  closeModal(id);const ov=document.createElement('div');ov.className='modal-overlay';ov.id=id+'_ov';
-  ov.innerHTML=`<div class="modal">${html}</div>`;
-  ov.addEventListener('click',e=>{if(e.target===ov)closeModal(id);});
-  document.body.appendChild(ov);
+closeModal(id);const ov=document.createElement(‘div’);ov.className=‘modal-overlay’;ov.id=id+’_ov’;
+ov.innerHTML=`<div class="modal">${html}</div>`;
+ov.addEventListener(‘click’,e=>{if(e.target===ov)closeModal(id);});
+document.body.appendChild(ov);
 }
-function closeModal(id){const el=document.getElementById(id+'_ov');if(el)el.remove();}
+function closeModal(id){const el=document.getElementById(id+’_ov’);if(el)el.remove();}
 
 // ================================================================
 // ACTIONS
 // ================================================================
 function getBike(id){return state.bikes.find(b=>b.id===id)}
 function setFilter(f){filter=f;render()}
-function addBike(){const b=newBike();state.bikes.push(b);markDirty('Neues Bike');buildBikeLinks();navigate('bike',b.id,'info')}
-function deleteBike(id){if(!confirm('Bike wirklich löschen?'))return;state.bikes=state.bikes.filter(b=>b.id!==id);saveState(true);buildBikeLinks();navigate('overview')}
-function retireBike(id){const b=getBike(id);b.status=b.status==='aktiv'?'ausgemustert':'aktiv';markDirty('Status');buildBikeLinks();navigate('bike',id,tab)}
-function addTodo(id){const t=prompt('Aufgabe:');if(!t||!t.trim())return;getBike(id).todos.push({text:t.trim(),done:false});markDirty('ToDo');switchTab('todos')}
-function toggleTodo(id,i){getBike(id).todos[i].done=!getBike(id).todos[i].done;markDirty('ToDo');switchTab('todos')}
-function delTodo(id,i){getBike(id).todos.splice(i,1);markDirty('ToDo');switchTab('todos')}
+function addBike(){const b=newBike();state.bikes.push(b);markDirty(‘Neues Bike’);buildBikeLinks();navigate(‘bike’,b.id,‘info’)}
+function deleteBike(id){if(!confirm(‘Bike wirklich löschen?’))return;state.bikes=state.bikes.filter(b=>b.id!==id);saveState(true);buildBikeLinks();navigate(‘overview’)}
+function retireBike(id){const b=getBike(id);b.status=b.status===‘aktiv’?‘ausgemustert’:‘aktiv’;markDirty(‘Status’);buildBikeLinks();navigate(‘bike’,id,tab)}
+function addTodo(id){const t=prompt(‘Aufgabe:’);if(!t||!t.trim())return;getBike(id).todos.push({text:t.trim(),done:false});markDirty(‘ToDo’);switchTab(‘todos’)}
+function toggleTodo(id,i){getBike(id).todos[i].done=!getBike(id).todos[i].done;markDirty(‘ToDo’);switchTab(‘todos’)}
+function delTodo(id,i){getBike(id).todos.splice(i,1);markDirty(‘ToDo’);switchTab(‘todos’)}
 function addCustomSetting(id){
-  const l=prompt('Name des Feldes:');if(!l||!l.trim())return;
-  const u=prompt('Einheit (optional, z.B. PSI, mm, Klicks…):')||'';
-  getBike(id).settings.push({label:l.trim(),unit:u,group:'Eigene Felder',isStandard:false,history:[]});
-  markDirty('Einstellungen');switchTab('einstellungen');
+const l=prompt(‘Name des Feldes:’);if(!l||!l.trim())return;
+const u=prompt(‘Einheit (optional, z.B. PSI, mm, Klicks…):’)||’’;
+getBike(id).settings.push({label:l.trim(),unit:u,group:‘Eigene Felder’,isStandard:false,history:[]});
+markDirty(‘Einstellungen’);switchTab(‘einstellungen’);
 }
-function delCustomSetting(si){const b=getBike(bikeId);if(!confirm(`Feld "${b.settings[si].label}" löschen?`))return;b.settings.splice(si,1);markDirty('Einstellungen');switchTab('einstellungen')}
-function savePersonal(){const ed=document.getElementById('personal-editor');if(ed){state.personalInfo=ed.innerHTML;saveState(true);}}
+function delCustomSetting(si){const b=getBike(bikeId);if(!confirm(`Feld "${b.settings[si].label}" löschen?`))return;b.settings.splice(si,1);markDirty(‘Einstellungen’);switchTab(‘einstellungen’)}
+function savePersonal(){const ed=document.getElementById(‘personal-editor’);if(ed){state.personalInfo=ed.innerHTML;saveState(true);}}
 function handlePhotos(e){
-  const files=Array.from(e.target.files);if(!files.length||!bikeId)return;
-  const b=getBike(bikeId);
-  // Suggest date of last component/setting change
-  const allDates=[];
-  b.components.forEach(c=>c.history.forEach(h=>{if(h.datum)allDates.push(h.datum);}));
-  b.settings.forEach(s=>s.history.forEach(h=>{if(h.datum)allDates.push(h.datum);}));
-  allDates.sort();
-  const suggestedDate=allDates.length?allDates[allDates.length-1]:today();
-  const datumInput=prompt('Aufnahmedatum des Fotos (JJJJ-MM-TT):',suggestedDate);
-  if(datumInput===null)return; // cancelled
-  const datum=datumInput.trim()||suggestedDate;
-  files.forEach(file=>{const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{
-    const c=document.createElement('canvas');let w=img.width,h=img.height,max=1200;
-    if(w>max){h=h*(max/w);w=max;}if(h>max){w=w*(max/h);h=max;}
-    c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-    b.fotos.push({data:c.toDataURL('image/jpeg',.72),datum});
-    markDirty('Fotos');if(tab==='info')switchTab('info');
-    if(tab==='zeitstrahl')switchTab('zeitstrahl');
-  };img.src=ev.target.result;};r.readAsDataURL(file);});e.target.value='';
+const files=Array.from(e.target.files);if(!files.length||!bikeId)return;
+const b=getBike(bikeId);
+// Suggest date of last component/setting change
+const allDates=[];
+b.components.forEach(c=>c.history.forEach(h=>{if(h.datum)allDates.push(h.datum);}));
+b.settings.forEach(s=>s.history.forEach(h=>{if(h.datum)allDates.push(h.datum);}));
+allDates.sort();
+const suggestedDate=allDates.length?allDates[allDates.length-1]:today();
+const datumInput=prompt(‘Aufnahmedatum des Fotos (JJJJ-MM-TT):’,suggestedDate);
+if(datumInput===null)return; // cancelled
+const datum=datumInput.trim()||suggestedDate;
+files.forEach(file=>{const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{
+const c=document.createElement(‘canvas’);let w=img.width,h=img.height,max=1200;
+if(w>max){h=h*(max/w);w=max;}if(h>max){w=w*(max/h);h=max;}
+c.width=w;c.height=h;c.getContext(‘2d’).drawImage(img,0,0,w,h);
+b.fotos.push({data:c.toDataURL(‘image/jpeg’,.72),datum});
+markDirty(‘Fotos’);if(tab===‘info’)switchTab(‘info’);
+if(tab===‘zeitstrahl’)switchTab(‘zeitstrahl’);
+};img.src=ev.target.result;};r.readAsDataURL(file);});e.target.value=’’;
 }
-function delPhoto(i){getBike(bikeId).fotos.splice(i,1);markDirty('Fotos');if(tab==='zeitstrahl')switchTab('zeitstrahl');else switchTab('info');}
+function delPhoto(i){getBike(bikeId).fotos.splice(i,1);markDirty(‘Fotos’);if(tab===‘zeitstrahl’)switchTab(‘zeitstrahl’);else switchTab(‘info’);}
 function tabZeitstrahl(b){
-  // Collect all dates with real changes
-  const dateMap={}; // date -> {comps:{name->wert}, settings:{label->wert}, foto}
-  // Gather all change dates from components
-  b.components.forEach(c=>{
-    c.history.forEach(h=>{
-      if(h.datum&&h.wert){
-        if(!dateMap[h.datum])dateMap[h.datum]={label:'',changes:[]};
-      }
-    });
-  });
-  b.settings.forEach(s=>{
-    s.history.forEach(h=>{
-      if(h.datum&&h.wert){
-        if(!dateMap[h.datum])dateMap[h.datum]={label:'',changes:[]};
-      }
-    });
-  });
-  b.fotos.forEach(f=>{
-    const d=typeof f==='string'?null:f.datum;
-    if(d&&!dateMap[d])dateMap[d]={label:'',changes:[]};
-  });
+// Collect all dates with real changes
+const dateMap={}; // date -> {comps:{name->wert}, settings:{label->wert}, foto}
+// Gather all change dates from components
+b.components.forEach(c=>{
+c.history.forEach(h=>{
+if(h.datum&&h.wert){
+if(!dateMap[h.datum])dateMap[h.datum]={label:’’,changes:[]};
+}
+});
+});
+b.settings.forEach(s=>{
+s.history.forEach(h=>{
+if(h.datum&&h.wert){
+if(!dateMap[h.datum])dateMap[h.datum]={label:’’,changes:[]};
+}
+});
+});
+b.fotos.forEach(f=>{
+const d=typeof f===‘string’?null:f.datum;
+if(d&&!dateMap[d])dateMap[d]={label:’’,changes:[]};
+});
 
-  const dates=Object.keys(dateMap).sort();
-  if(!dates.length)return`<div class="empty-state"><h3>Keine Einträge</h3><p>Erfasse Komponenten mit Datum um den Zeitstrahl zu sehen.</p></div>`;
+const dates=Object.keys(dateMap).sort();
+if(!dates.length)return`<div class="empty-state"><h3>Keine Einträge</h3><p>Erfasse Komponenten mit Datum um den Zeitstrahl zu sehen.</p></div>`;
 
-  // For each date, compute full bike state at that point
-  function stateAtDate(targetDate){
-    const compState={}, setState={};
-    b.components.forEach(c=>{
-      const hist=[...c.history].filter(h=>h.datum<=targetDate);
-      if(hist.length)compState[c.name]={wert:hist[hist.length-1].wert,gewicht:hist[hist.length-1].gewicht};
-    });
-    b.settings.forEach(s=>{
-      const hist=[...s.history].filter(h=>h.datum<=targetDate);
-      if(hist.length)setState[s.label]={wert:hist[hist.length-1].wert,unit:s.unit};
-    });
-    return{compState,setState};
-  }
+// For each date, compute full bike state at that point
+function stateAtDate(targetDate){
+const compState={}, setState={};
+b.components.forEach(c=>{
+const hist=[…c.history].filter(h=>h.datum<=targetDate);
+if(hist.length)compState[c.name]={wert:hist[hist.length-1].wert,gewicht:hist[hist.length-1].gewicht};
+});
+b.settings.forEach(s=>{
+const hist=[…s.history].filter(h=>h.datum<=targetDate);
+if(hist.length)setState[s.label]={wert:hist[hist.length-1].wert,unit:s.unit};
+});
+return{compState,setState};
+}
 
-  function changesAtDate(targetDate, prevDate){
-    const curr=stateAtDate(targetDate);
-    const prev=prevDate?stateAtDate(prevDate):{compState:{},setState:{}};
-    const changes=[];
-    Object.entries(curr.compState).forEach(([name,v])=>{
-      const pv=prev.compState[name];
-      if(!pv||pv.wert!==v.wert)changes.push({type:'comp',name,wert:v.wert,gewicht:v.gewicht});
-    });
-    Object.entries(curr.setState).forEach(([label,v])=>{
-      const pv=prev.setState[label];
-      if(!pv||pv.wert!==v.wert)changes.push({type:'set',name:label,wert:v.wert,unit:v.unit});
-    });
-    return changes;
-  }
+function changesAtDate(targetDate, prevDate){
+const curr=stateAtDate(targetDate);
+const prev=prevDate?stateAtDate(prevDate):{compState:{},setState:{}};
+const changes=[];
+Object.entries(curr.compState).forEach(([name,v])=>{
+const pv=prev.compState[name];
+if(!pv||pv.wert!==v.wert)changes.push({type:‘comp’,name,wert:v.wert,gewicht:v.gewicht});
+});
+Object.entries(curr.setState).forEach(([label,v])=>{
+const pv=prev.setState[label];
+if(!pv||pv.wert!==v.wert)changes.push({type:‘set’,name:label,wert:v.wert,unit:v.unit});
+});
+return changes;
+}
 
-  // Render snapshots newest first
-  const html=dates.slice().reverse().map((d,ri)=>{
-    const prevDate=dates[dates.length-1-ri-1]||null;
-    const changes=changesAtDate(d,prevDate);
-    const foto=lastPhotoForDate(b,d);
-    const {compState,setState}=stateAtDate(d);
+// Render snapshots newest first
+const html=dates.slice().reverse().map((d,ri)=>{
+const prevDate=dates[dates.length-1-ri-1]||null;
+const changes=changesAtDate(d,prevDate);
+const foto=lastPhotoForDate(b,d);
+const {compState,setState}=stateAtDate(d);
 
-    // group changes
-    const compChanges=changes.filter(c=>c.type==='comp');
-    const setChanges=changes.filter(c=>c.type==='set');
+```
+// group changes
+const compChanges=changes.filter(c=>c.type==='comp');
+const setChanges=changes.filter(c=>c.type==='set');
 
-    const uid3='z'+Math.random().toString(36).slice(2);
+const uid3='z'+Math.random().toString(36).slice(2);
 
-    return`<div style="display:flex;gap:14px;margin-bottom:22px">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:0">
-        <div style="width:12px;height:12px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px"></div>
-        <div style="width:2px;flex:1;background:var(--border);margin-top:4px"></div>
+return`<div style="display:flex;gap:14px;margin-bottom:22px">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+    <div style="width:12px;height:12px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px"></div>
+    <div style="width:2px;flex:1;background:var(--border);margin-top:4px"></div>
+  </div>
+  <div style="flex:1;padding-bottom:8px">
+    <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:8px">${fmtDate(d)}</div>
+    ${foto?`<img src="${foto}" style="width:100%;max-width:320px;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid var(--border)">`:'' }
+    ${changes.length===0?`<div style="font-size:12px;color:var(--muted);font-style:italic">Foto hinzugefügt</div>`:`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px">
+      ${compChanges.length?`<div style="padding:7px 12px;background:var(--surface2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Komponenten</div>
+      ${compChanges.map(c=>`<div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:baseline">
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:110px;flex-shrink:0">${esc(c.name)}</div>
+        <div style="font-size:12.5px;flex:1">${esc(c.wert)}</div>
+        ${c.gewicht?`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${c.gewicht}g</div>`:''}
+      </div>`).join('')}`:''}
+      ${setChanges.length?`<div style="padding:7px 12px;background:var(--surface2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Einstellungen</div>
+      ${setChanges.map(c=>`<div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:baseline">
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:110px;flex-shrink:0">${esc(c.name)}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600">${esc(c.wert)}${c.unit?' '+c.unit:''}</div>
+      </div>`).join('')}`:''}
+    </div>`}
+    <div class="hist-toggle" onclick="const c=document.getElementById('${uid3}');const o=c.style.display!=='none';c.style.display=o?'none':'block';this.querySelector('.hist-icon').style.transform=o?'rotate(0)':'rotate(90deg)'" style="border-top:none;padding:4px 0">
+      <span class="hist-icon">▶</span>Vollständiger Zustand
+    </div>
+    <div id="${uid3}" style="display:none;padding-top:8px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        ${Object.entries(compState).map(([name,v])=>`<div style="padding:7px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:110px;flex-shrink:0">${esc(name)}</div>
+          <div style="font-size:12px;flex:1">${esc(v.wert)}</div>
+        </div>`).join('')}
       </div>
-      <div style="flex:1;padding-bottom:8px">
-        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:8px">${fmtDate(d)}</div>
-        ${foto?`<img src="${foto}" style="width:100%;max-width:320px;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid var(--border)">`:'' }
-        ${changes.length===0?`<div style="font-size:12px;color:var(--muted);font-style:italic">Foto hinzugefügt</div>`:`
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px">
-          ${compChanges.length?`<div style="padding:7px 12px;background:var(--surface2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Komponenten</div>
-          ${compChanges.map(c=>`<div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:baseline">
-            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:110px;flex-shrink:0">${esc(c.name)}</div>
-            <div style="font-size:12.5px;flex:1">${esc(c.wert)}</div>
-            ${c.gewicht?`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${c.gewicht}g</div>`:''}
-          </div>`).join('')}`:''}
-          ${setChanges.length?`<div style="padding:7px 12px;background:var(--surface2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Einstellungen</div>
-          ${setChanges.map(c=>`<div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:baseline">
-            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:110px;flex-shrink:0">${esc(c.name)}</div>
-            <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600">${esc(c.wert)}${c.unit?' '+c.unit:''}</div>
-          </div>`).join('')}`:''}
-        </div>`}
-        <div class="hist-toggle" onclick="const c=document.getElementById('${uid3}');const o=c.style.display!=='none';c.style.display=o?'none':'block';this.querySelector('.hist-icon').style.transform=o?'rotate(0)':'rotate(90deg)'" style="border-top:none;padding:4px 0">
-          <span class="hist-icon">▶</span>Vollständiger Zustand
-        </div>
-        <div id="${uid3}" style="display:none;padding-top:8px">
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
-            ${Object.entries(compState).map(([name,v])=>`<div style="padding:7px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px">
-              <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:110px;flex-shrink:0">${esc(name)}</div>
-              <div style="font-size:12px;flex:1">${esc(v.wert)}</div>
-            </div>`).join('')}
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+    </div>
+  </div>
+</div>`;
+```
 
-  return`<div class="section">
-    <div class="section-header"><div class="section-title">Zeitstrahl</div><span style="font-size:11px;color:var(--muted)">${dates.length} Zeitpunkte</span></div>
-    ${html}
+}).join(’’);
+
+return`<div class="section">
+<div class="section-header"><div class="section-title">Zeitstrahl</div><span style="font-size:11px;color:var(--muted)">${dates.length} Zeitpunkte</span></div>
+${html}
+
   </div>`;
 }
 
-
 function exportJson(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const filename=`velodb_${new Date().toISOString().split('T')[0]}.json`;
-  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([blob],filename,{type:'application/json'})]})){
-    navigator.share({files:[new File([blob],filename,{type:'application/json'})],title:'VeloDB Backup'}).catch(()=>{});
-  }else{
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
-  }
+const blob=new Blob([JSON.stringify(state,null,2)],{type:‘application/json’});
+const filename=`velodb_${new Date().toISOString().split('T')[0]}.json`;
+if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([blob],filename,{type:‘application/json’})]})){
+navigator.share({files:[new File([blob],filename,{type:‘application/json’})],title:‘VeloDB Backup’}).catch(()=>{});
+}else{
+const a=document.createElement(‘a’);a.href=URL.createObjectURL(blob);a.download=filename;a.click();
 }
-function importJson(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!confirm('Alle Daten werden überschrieben?'))return;state=d;state.bikes.forEach(b=>{b.components.forEach(c=>{if(c.notVorhanden===undefined)c.notVorhanden=false;});b.fotos=b.fotos.map(f=>typeof f==='string'?{data:f,datum:today()}:f);});saveState(false);buildBikeLinks();navigate('overview');showToast('Import ✓');}catch{alert('Ungültige JSON-Datei.');}};r.readAsText(file);e.target.value='';}
+}
+function importJson(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!confirm(‘Alle Daten werden überschrieben?’))return;state=d;state.bikes.forEach(b=>{b.components.forEach(c=>{if(c.notVorhanden===undefined)c.notVorhanden=false;});b.fotos=b.fotos.map(f=>typeof f===‘string’?{data:f,datum:today()}:f);});saveState(false);buildBikeLinks();navigate(‘overview’);showToast(‘Import ✓’);}catch{alert(‘Ungültige JSON-Datei.’);}};r.readAsText(file);e.target.value=’’;}
 function exportCsv(id){
-  const b=getBike(id);
-  const rows=[['Gruppe','Komponente','Datum','Bezeichnung','Gewicht (g)','Preis (CHF)','Notiz']];
-  b.components.forEach(c=>{if(!c.notVorhanden)c.history.forEach(h=>rows.push([c.group,c.name,h.datum,h.wert,h.gewicht,h.preis,h.notiz]));});
-  const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${b.marke}_${b.modell}.csv`.replace(/[\s\/]+/g,'_');a.click();
+const b=getBike(id);
+const rows=[[‘Gruppe’,‘Komponente’,‘Datum’,‘Bezeichnung’,‘Gewicht (g)’,‘Preis (CHF)’,‘Notiz’]];
+b.components.forEach(c=>{if(!c.notVorhanden)c.history.forEach(h=>rows.push([c.group,c.name,h.datum,h.wert,h.gewicht,h.preis,h.notiz]));});
+const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(’,’)).join(’\n’);
+const blob=new Blob([’\uFEFF’+csv],{type:‘text/csv;charset=utf-8’});
+const a=document.createElement(‘a’);a.href=URL.createObjectURL(blob);a.download=`${b.marke}_${b.modell}.csv`.replace(/[\s/]+/g,’_’);a.click();
 }
 function attachListeners(){
-  document.querySelectorAll('[data-field]').forEach(el=>{
-    el.addEventListener('input',()=>{const b=getBike(bikeId);if(!b)return;b[el.dataset.field]=el.value;markDirty(el.dataset.label||el.dataset.field);});
-  });
+document.querySelectorAll(’[data-field]’).forEach(el=>{
+el.addEventListener(‘input’,()=>{const b=getBike(bikeId);if(!b)return;b[el.dataset.field]=el.value;markDirty(el.dataset.label||el.dataset.field);});
+});
 }
 buildBikeLinks();
-navigate('overview');
+navigate(‘overview’);
 </script>
+
 </body>
 </html>
