@@ -928,6 +928,16 @@ function saveInfoGewicht() {
 // IMPORT / EXPORT / UTILS
 // ================================================================
 
+function unloadJson() {
+  if (!confirm('Alle Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+  state = { version: 12, personalInfo: '', bikes: [], geoDefs: defaultGeoDefs(), infoDefs: DEFAULT_INFO_DEFS.map(d => ({ ...d })) };
+  localStorage.setItem('velodb_v6', JSON.stringify(state));
+  hideBanner();
+  buildBikeLinks();
+  navigate('overview');
+  showToast('Daten gelöscht');
+}
+
 function exportJson() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const filename = `velodb_${new Date().toISOString().split('T')[0]}.json`;
