@@ -835,10 +835,11 @@ function renderTab(b){
   return tabInfo(b);
 }
 
+const _SEP='<span style="color:var(--border);margin:0 8px">/</span>';
 function getInfoVal(b,def){
   const totalCompG=b.components.filter(c=>!c.notVorhanden).map(c=>parseFloat((cur(c.history)||{}).gewicht)).filter(v=>!isNaN(v)).reduce((a,x)=>a+x,0);
-  if(def.type==='radgroesse')return b.radgroesseV||b.radgroesseH?`${b.radgroesseV||'—'} / ${b.radgroesseH||'—'}`:'';
-  if(def.type==='gewicht'){const g=b.gewichtGewogen?b.gewichtGewogen+'g':'';const bc=totalCompG>0?totalCompG+'g':'';return g||bc?`${g||'—'} / ${bc||'—'}`:''}
+  if(def.type==='radgroesse')return b.radgroesseV||b.radgroesseH?`${esc(b.radgroesseV||'—')}${_SEP}${esc(b.radgroesseH||'—')}`:'';
+  if(def.type==='gewicht'){const g=b.gewichtGewogen?b.gewichtGewogen+'g':'';const bc=totalCompG>0?totalCompG+'g':'';return g||bc?`${esc(g||'—')}${_SEP}${esc(bc||'—')}`:''}
   if(def.isStandard)return def.id==='bezugsdatum'&&b[def.id]?fmtDate(b[def.id]):b[def.id]||'';
   return(b.infoVals||{})[def.id]||'';
 }
@@ -890,9 +891,9 @@ function tabInfo(b){
         <input class="field-edit-input" value="${esc(def.label)}" onblur="renameInfoField('${def.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
         ${def.isStandard?`<span style="font-size:10px;color:var(--muted);padding:0 4px;white-space:nowrap">Standard</span>`:`<button class="btn btn-danger btn-sm" onclick="deleteInfoField('${def.id}')">✕</button>`}
       </div>`).join('')
-    :state.infoDefs.map(def=>{const v=getInfoVal(b,def);return`<div class="info-field-row" onclick="openInfoFieldEdit('${def.id}')">
+    :state.infoDefs.map(def=>{const v=getInfoVal(b,def);const html=def.type==='radgroesse'||def.type==='gewicht';return`<div class="info-field-row" onclick="openInfoFieldEdit('${def.id}')">
         <div class="info-lbl">${esc(def.label)}</div>
-        <div class="info-val${v?'':' empty'}">${v?esc(v):'—'}</div>
+        <div class="info-val${v?'':' empty'}">${v?(html?v:esc(v)):'—'}</div>
       </div>`;}).join('');
   return`<div class="section"><div class="section-header"><div class="section-title">Allgemeine Infos</div>${editBtn('info')}</div>
     ${em?`<div class="edit-mode-bar">✏ Verschieben, umbenennen oder löschen. Standard-Felder können nicht gelöscht werden.</div>`:''}
