@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>VeloDB 1.1</title>
+<title>VeloDB 1.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -150,11 +150,21 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .todo-text{font-size:13px;flex:1}
 .todo-text.done{text-decoration:line-through;color:var(--muted)}
 /* COMPARE */
-.compare-grid{display:grid;grid-template-columns:175px 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.compare-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .cmp-cell{background:var(--surface);padding:8px 12px;font-size:12px;line-height:1.3}
 .cmp-cell.header{background:var(--surface2);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-align:center;padding:13px}
 .cmp-cell.row-label{background:var(--surface2);font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .cmp-diff{color:var(--accent)}
+
+/* COMPARE COLOR GROUPS */
+.cmp-g0{background:var(--surface)}
+.cmp-g1{background:rgba(59,130,246,.12);color:#93c5fd}
+.cmp-g2{background:rgba(34,197,94,.12);color:#86efac}
+.cmp-g3{background:rgba(251,191,36,.12);color:#fcd34d}
+.cmp-g4{background:rgba(168,85,247,.12);color:#c4b5fd}
+.cmp-g5{background:rgba(236,72,153,.12);color:#f9a8d4}
+.cmp-g-unique{background:var(--surface)}
+
 .cmp-section{background:rgba(232,97,26,.08);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);padding:5px 12px}
 /* AUTOSAVE */
 #save-banner{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:14px 17px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:500;min-width:265px;display:none;animation:slideup .3s ease}
@@ -854,20 +864,43 @@ function tabTodos(b){
 function renderCompare(){
   return`<div class="topbar"><div class="topbar-title">Bike Vergleich</div></div>
   <div class="content">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
-      <div>
-        <div class="form-group"><label class="form-label">Bike 1</label><select class="form-input" id="cmp-b1" onchange="updateCmpSnaps(1);renderCmpTable()">${cmpBikeOptions(cmpIds[0])}</select></div>
-        <div class="form-group"><label class="form-label">Snapshot 1</label><select class="form-input" id="cmp-s1" onchange="cmpSnaps[0]=this.value;renderCmpTable()">${cmpSnapOptions(cmpIds[0],cmpSnaps[0])}</select></div>
-      </div>
-      <div>
-        <div class="form-group"><label class="form-label">Bike 2</label><select class="form-input" id="cmp-b2" onchange="updateCmpSnaps(2);renderCmpTable()">${cmpBikeOptions(cmpIds[1])}</select></div>
-        <div class="form-group"><label class="form-label">Snapshot 2</label><select class="form-input" id="cmp-s2" onchange="cmpSnaps[1]=this.value;renderCmpTable()">${cmpSnapOptions(cmpIds[1],cmpSnaps[1])}</select></div>
+    <div id="cmp-selectors" style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px">
+      ${cmpIds.map((id,i)=>cmpSelectorHtml(i)).join('')}
+      <div style="padding-top:20px">
+        <button class="btn btn-secondary btn-sm" onclick="addCmpBike()" title="Weiteres Bike hinzufügen">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Bike
+        </button>
       </div>
     </div>
-    <div id="cmp-table">${cmpIds[0]&&cmpIds[1]?buildCmpTable():''}</div>
+    <div id="cmp-table">${cmpIds.filter(Boolean).length>=2?buildCmpTable():''}</div>
   </div>`;
 }
 
+function cmpSelectorHtml(i){
+  const canRemove=i>=2;
+  return`<div style="flex:1;min-width:150px;max-width:240px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <label class="form-label" style="margin:0">Bike ${i+1}</label>
+      ${canRemove?`<button onclick="removeCmpBike(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px" title="Entfernen">&#x2715;</button>`:''}
+    </div>
+    <select class="form-input" onchange="cmpIds[${i}]=this.value;cmpSnaps[${i}]='';refreshCmpSnap(${i});renderCmpTable()">${cmpBikeOptions(cmpIds[i])}</select>
+    <select class="form-input" id="cmp-s${i}" style="margin-top:5px" onchange="cmpSnaps[${i}]=this.value;renderCmpTable()">${cmpSnapOptions(cmpIds[i],cmpSnaps[i])}</select>
+  </div>`;
+}
+
+function addCmpBike(){
+  cmpIds.push('');cmpSnaps.push('');
+  document.getElementById('view').innerHTML=renderCompare();attachListeners();
+}
+function removeCmpBike(i){
+  cmpIds.splice(i,1);cmpSnaps.splice(i,1);
+  document.getElementById('view').innerHTML=renderCompare();attachListeners();renderCmpTable();
+}
+function refreshCmpSnap(i){
+  const sel=document.getElementById('cmp-s'+i);
+  if(sel)sel.innerHTML=cmpSnapOptions(cmpIds[i],'');
+}
 function cmpBikeOptions(sel){
   return`<option value="">— wählen —</option>`+state.bikes.map(b=>`<option value="${b.id}"${sel===b.id?' selected':''}>${esc(b.marke)} ${esc(b.modell)}</option>`).join('');
 }
@@ -885,42 +918,36 @@ function getCmpDates(b){
   const dates=[...dateSet].sort();
   return dates.map((d,i)=>{
     const prev=i>0?dates[i-1]:null;
-    // compute changed names
     const changed=[];
     b.components.forEach(c=>{
-      const hNow=[...c.history].filter(h=>h.datum<=d);
-      const hPrev=prev?[...c.history].filter(h=>h.datum<=prev):[];
-      const vNow=hNow.length?hNow[hNow.length-1].wert:'';
-      const vPrev=hPrev.length?hPrev[hPrev.length-1].wert:'';
-      if(vNow!==vPrev&&vNow)changed.push(c.name);
+      const hN=[...c.history].filter(h=>h.datum<=d);
+      const hP=prev?[...c.history].filter(h=>h.datum<=prev):[];
+      const vN=hN.length?hN[hN.length-1].wert:'';
+      const vP=hP.length?hP[hP.length-1].wert:'';
+      if(vN!==vP&&vN)changed.push(c.name);
     });
     b.settings.forEach(s=>{
-      const hNow=[...s.history].filter(h=>h.datum<=d);
-      const hPrev=prev?[...s.history].filter(h=>h.datum<=prev):[];
-      const vNow=hNow.length?hNow[hNow.length-1].wert:'';
-      const vPrev=hPrev.length?hPrev[hPrev.length-1].wert:'';
-      if(vNow!==vPrev&&vNow)changed.push(s.label);
+      const hN=[...s.history].filter(h=>h.datum<=d);
+      const hP=prev?[...s.history].filter(h=>h.datum<=prev):[];
+      const vN=hN.length?hN[hN.length-1].wert:'';
+      const vP=hP.length?hP[hP.length-1].wert:'';
+      if(vN!==vP&&vN)changed.push(s.label);
     });
     let summary='';
     if(changed.length===0)summary='Foto/Sonstiges';
     else if(changed.length<=3)summary=changed.join(', ');
     else summary=changed.slice(0,3).join(', ')+` u.a. (${changed.length})`;
     return{date:d,summary};
-  }).reverse(); // newest first
+  }).reverse();
 }
 function updateCmpSnaps(n){
-  const sel=document.getElementById('cmp-b'+n);
-  if(!sel)return;
-  const bid=sel.value;
-  cmpIds[n-1]=bid;
-  cmpSnaps[n-1]=''; // reset to current
-  // Re-render snap dropdown
-  const snapSel=document.getElementById('cmp-s'+n);
-  if(snapSel)snapSel.innerHTML=cmpSnapOptions(bid,'');
+  cmpIds[n-1]=document.getElementById('cmp-b'+(n-1)).value;
+  cmpSnaps[n-1]='';
+  refreshCmpSnap(n-1);
 }
 function renderCmpTable(){
   const t=document.getElementById('cmp-table');
-  if(t)t.innerHTML=cmpIds[0]&&cmpIds[1]?buildCmpTable():'';
+  if(t)t.innerHTML=cmpIds.filter(Boolean).length>=2?buildCmpTable():'';
 }
 function stateAtDateForCmp(b,targetDate){
   const cs={},ss={},gs={};
@@ -940,44 +967,98 @@ function stateAtDateForCmp(b,targetDate){
   });
   return{cs,ss,gs};
 }
+
 function buildCmpTable(){
-  const b1=getBike(cmpIds[0]),b2=getBike(cmpIds[1]);
-  if(!b1||!b2)return'';
-  const d1=cmpSnaps[0]||null,d2=cmpSnaps[1]||null;
-  const s1=stateAtDateForCmp(b1,d1),s2=stateAtDateForCmp(b2,d2);
-  const lbl1=b1.marke+' '+b1.modell.slice(0,20)+(d1?'<br><span style="font-size:11px;font-weight:400">'+fmtDate(d1)+'</span>':'');
-  const lbl2=b2.marke+' '+b2.modell.slice(0,20)+(d2?'<br><span style="font-size:11px;font-weight:400">'+fmtDate(d2)+'</span>':'');
-  const rows=[],addS=l=>rows.push({s:l}),addR=(l,v1,v2)=>rows.push({l,v1:v1||'—',v2:v2||'—'});
+  const pairs=cmpIds.map((id,i)=>({id,snap:cmpSnaps[i]||null})).filter(p=>p.id);
+  if(pairs.length<2)return'';
+  const bikes=pairs.map(p=>getBike(p.id));
+  const snaps=pairs.map(p=>p.snap);
+  const states=bikes.map((b,i)=>stateAtDateForCmp(b,snaps[i]));
+  const gridCols='auto '+bikes.map(()=>'1fr').join(' ');
+
+  // Assign color group index per value
+  // Returns array of group indices (0-based) per bike, or null if all same
+  function colorGroups(vals){
+    // normalize empty/null to '' for grouping
+    const norm=vals.map(v=>(!v||v==='')?'':v);
+    const unique=[...new Set(norm)];
+    if(unique.length===1)return null; // all same, no highlight
+    // assign group index by order of first appearance
+    const map={};let idx=0;
+    norm.forEach(v=>{if(map[v]===undefined)map[v]=idx++;});
+    return norm.map(v=>map[v]);
+  }
+
+  const rows=[],addS=l=>rows.push({s:l}),addR=(l,...vals)=>rows.push({l,vals});
+
   addS('Allgemein');
-  addR('Marke',b1.marke,b2.marke);addR('Modell',b1.modell,b2.modell);addR('Typ',b1.typ,b2.typ);
-  addR('Jahr',b1.jahr,b2.jahr);addR('Grösse',b1.groesse,b2.groesse);
-  addR('Federweg',b1.federweg?b1.federweg+' mm':'',b2.federweg?b2.federweg+' mm':'');
-  addR('Kaufpreis',b1.preis?'CHF '+b1.preis:'',b2.preis?'CHF '+b2.preis:'');
-  addR('Gewicht gewogen',b1.gewichtGewogen?(parseInt(b1.gewichtGewogen)/1000).toFixed(2)+' kg':'',b2.gewichtGewogen?(parseInt(b2.gewichtGewogen)/1000).toFixed(2)+' kg':'');
-  addS('Schlüssel-Komponenten');
-  ['Rahmen','Gabel','Dämpfer','Schaltwerk','Bremsen vorne','Reifen vorne','Sattel','Sattelstütze','Motor','Akku'].forEach(n=>{
-    const v1=s1.cs[n],v2=s2.cs[n];
-    if(v1||v2)addR(n,v1||'',v2||'');
+  addR('Marke',...bikes.map(b=>b.marke));
+  addR('Modell',...bikes.map(b=>b.modell));
+  addR('Typ',...bikes.map(b=>b.typ));
+  addR('Jahr',...bikes.map(b=>b.jahr));
+  addR('Grösse',...bikes.map(b=>b.groesse));
+  addR('Federweg',...bikes.map(b=>b.federweg?b.federweg+' mm':''));
+  addR('Kaufpreis',...bikes.map(b=>b.preis?'CHF '+b.preis:''));
+  addR('Gewicht gewogen',...bikes.map(b=>b.gewichtGewogen?(parseInt(b.gewichtGewogen)/1000).toFixed(2)+' kg':''));
+
+  const orderedGroups=[];
+  bikes.forEach(b=>compGroupOrder(b.components).forEach(g=>{if(!orderedGroups.includes(g))orderedGroups.push(g);}));
+  orderedGroups.forEach(grp=>{
+    const orderedNames=[];
+    bikes.forEach(b=>b.components.filter(c=>c.group===grp).forEach(c=>{if(!orderedNames.includes(c.name))orderedNames.push(c.name);}));
+    let added=false;
+    orderedNames.forEach(name=>{
+      const vals=states.map(s=>s.cs[name]||'');
+      if(vals.every(v=>!v))return;
+      if(!added){addS(grp);added=true;}
+      addR(name,...vals);
+    });
   });
-  addS('Einstellungen');
-  ['Gabel Luftdruck','Dämpfer Luftdruck','Reifendruck vorne','Reifendruck hinten'].forEach(l=>{
-    const v1=s1.ss[l],v2=s2.ss[l];
-    if(v1||v2)addR(l+(v1&&v1.unit?` (${v1.unit})`:v2&&v2.unit?` (${v2.unit})`:''),v1?v1.wert:'',v2?v2.wert:'');
+
+  const setGroups={};
+  bikes.forEach(b=>b.settings.forEach(s=>{
+    const g=s.group||'Sonstige';
+    if(!setGroups[g])setGroups[g]=[];
+    if(!setGroups[g].includes(s.label))setGroups[g].push(s.label);
+  }));
+  Object.entries(setGroups).forEach(([grp,labels])=>{
+    let added=false;
+    labels.forEach(label=>{
+      const entries=states.map(s=>s.ss[label]);
+      const vals=entries.map(e=>e?e.wert:'');
+      if(vals.every(v=>!v))return;
+      if(!added){addS(grp);added=true;}
+      const unit=(entries.find(e=>e&&e.unit)||{}).unit||'';
+      addR(label+(unit?` (${unit})`:''),...vals);
+    });
   });
-  // Geometrie
-  const allGeo=new Set([...Object.keys(s1.gs),...Object.keys(s2.gs)]);
-  if(allGeo.size){
+
+  const allGeoLabels=new Set();
+  states.forEach(s=>Object.keys(s.gs).forEach(l=>allGeoLabels.add(l)));
+  if(allGeoLabels.size){
     addS('Geometrie');
-    allGeo.forEach(l=>{
-      const v1=s1.gs[l],v2=s2.gs[l];
-      addR(l+(v1&&v1.unit?` (${v1.unit})`:v2&&v2.unit?` (${v2.unit})`:''),v1?v1.wert:'',v2?v2.wert:'');
+    allGeoLabels.forEach(l=>{
+      const entries=states.map(s=>s.gs[l]);
+      const vals=entries.map(e=>e?e.wert:'');
+      if(vals.every(v=>!v))return;
+      const unit=(entries.find(e=>e&&e.unit)||{}).unit||'';
+      addR(l+(unit?` (${unit})`:''),...vals);
     });
   }
-  return`<div class="compare-grid">
-    <div class="cmp-cell row-label">Feld</div>
-    <div class="cmp-cell header">${lbl1}</div>
-    <div class="cmp-cell header">${lbl2}</div>
-    ${rows.map(r=>r.s?`<div class="cmp-section" style="grid-column:1/-1">${esc(r.s)}</div>`:`<div class="cmp-cell row-label">${esc(r.l)}</div><div class="cmp-cell ${r.v1!==r.v2&&r.v1!=='—'&&r.v2!=='—'?'cmp-diff':''}">${esc(r.v1)}</div><div class="cmp-cell ${r.v1!==r.v2&&r.v1!=='—'&&r.v2!=='—'?'cmp-diff':''}">${esc(r.v2)}</div>`).join('')}
+
+  const headers=bikes.map((b,i)=>{
+    const lbl=esc(b.marke+' '+b.modell.slice(0,20))+(snaps[i]?'<br><span style="font-size:11px;font-weight:400">'+fmtDate(snaps[i])+'</span>':'');
+    return`<div class="cmp-cell header">${lbl}</div>`;
+  }).join('');
+
+  return`<div class="compare-grid" style="grid-template-columns:${gridCols}">
+    <div class="cmp-cell row-label">Feld</div>${headers}
+    ${rows.map(r=>{
+      if(r.s)return`<div class="cmp-section" style="grid-column:1/-1">${esc(r.s)}</div>`;
+      const diff=isDiff(...r.vals);
+      return`<div class="cmp-cell row-label">${esc(r.l)}</div>`+
+        r.vals.map(v=>`<div class="cmp-cell ${diff?'cmp-diff':''}">${v?esc(v):'<span style="color:var(--muted);font-style:italic">—</span>'}</div>`).join('');
+    }).join('')}
   </div>`;
 }
 
