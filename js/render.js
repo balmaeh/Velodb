@@ -148,7 +148,7 @@ function tabInfo(b) {
     : state.infoDefs
         .map(def => {
           const v = getInfoVal(b, def);
-          const html = def.type === 'radgroesse' || def.type === 'gewicht';
+          const html = def.type === 'radgroesse' || def.type === 'gewicht' || def.type === 'richtext';
           return `<div class="info-field-row" onclick="openInfoFieldEdit('${def.id}')">
         <div class="info-lbl">${esc(def.label)}</div>
         <div class="info-val${v ? '' : ' empty'}">${v ? (html ? v : esc(v)) : '—'}</div>

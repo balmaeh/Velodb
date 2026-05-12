@@ -356,6 +356,7 @@ function openInfoFieldEdit(defId) {
   if (def.type === 'radgroesse') return openInfoRadgroesse();
   if (def.type === 'gewicht') return openInfoGewicht();
   if (def.type === 'textarea') return openInfoText(def.id, def.label);
+  if (def.type === 'richtext') return openInfoRichText(def.id, def.label);
   openInfoEdit(def.id, def.label, def.type || 'text');
 }
 
@@ -855,6 +856,48 @@ function openInfoText(field, label) {
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoField()">Speichern</button></div>`
   );
   setTimeout(() => document.getElementById('info-inp')?.focus(), 50);
+}
+
+function openInfoRichText(field, label) {
+  _infoEditField = field;
+  const b = getBike(bikeId);
+  const val = _infoReadVal(b, field);
+  showModal(
+    'info-modal',
+    `<div class="modal-header"><div><div class="modal-title">${esc(label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="rich-toolbar"><button class="rich-btn" onclick="document.execCommand('bold')"><b>B</b></button><button class="rich-btn" onclick="document.execCommand('italic')"><i>I</i></button><button class="rich-btn" onclick="document.execCommand('underline')"><u>U</u></button><button class="rich-btn" onclick="document.execCommand('insertUnorderedList')">• Liste</button></div>
+      <div id="info-richtext-editor" contenteditable="true">${val || ''}</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoRichText()">Speichern</button></div>`
+  );
+  setTimeout(() => {
+    const ed = document.getElementById('info-richtext-editor');
+    if (ed) {
+      ed.focus();
+      const r = document.createRange();
+      r.selectNodeContents(ed);
+      r.collapse(false);
+      const s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+    }
+  }, 50);
+}
+
+function saveInfoRichText() {
+  const b = getBike(bikeId);
+  const def = state.infoDefs?.find(d => d.id === _infoEditField);
+  const html = (document.getElementById('info-richtext-editor')?.innerHTML || '').trim();
+  if (def && !def.isStandard) {
+    if (!b.infoVals) b.infoVals = {};
+    b.infoVals[def.id] = html;
+  } else {
+    b[_infoEditField] = html;
+  }
+  markDirty(_infoEditField);
+  closeModal('info-modal');
+  switchTab('info');
 }
 
 function saveInfoField() {

@@ -94,8 +94,8 @@ const DEFAULT_INFO_DEFS = [
   { id: 'bezugsdatum', label: 'Bezugsdatum', type: 'date', isStandard: true },
   { id: 'preis', label: 'Kaufpreis (CHF)', type: 'number', isStandard: true },
   { id: 'listenpreis', label: 'Listenpreis (CHF)', type: 'number', isStandard: true },
-  { id: 'aktuellerZustand', label: 'Aktueller Zustand', type: 'textarea', isStandard: true },
-  { id: 'bemerkungen', label: 'Bemerkungen', type: 'textarea', isStandard: true },
+  { id: 'aktuellerZustand', label: 'Aktueller Zustand', type: 'richtext', isStandard: true },
+  { id: 'bemerkungen', label: 'Bemerkungen', type: 'richtext', isStandard: true },
 ];
 
 function newBike(o = {}) {

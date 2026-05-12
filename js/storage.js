@@ -26,6 +26,9 @@ if (!state) {
 // migrate old data
 ensureGeoDefs();
 if (!state.infoDefs) state.infoDefs = DEFAULT_INFO_DEFS.map(d => ({ ...d }));
+state.infoDefs.forEach(d => {
+  if ((d.id === 'aktuellerZustand' || d.id === 'bemerkungen') && d.type === 'textarea') d.type = 'richtext';
+});
 state.bikes.forEach(b => {
   b.components.forEach(c => {
     if (c.notVorhanden === undefined) c.notVorhanden = false;
