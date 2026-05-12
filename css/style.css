@@ -188,6 +188,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 #personal-editor:focus{border-color:var(--accent)}
 .photo-upload-area{border:2px dashed var(--border);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;color:var(--muted);font-size:12px;transition:border-color .15s}
 .photo-upload-area:hover{border-color:var(--accent);color:var(--accent)}
+.photo-drop-zone.drag-over{outline:2px dashed var(--accent);outline-offset:-2px}
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:7px;margin-top:10px}
 .photo-thumb{aspect-ratio:4/3;border-radius:6px;overflow:hidden;position:relative;background:var(--surface2)}
 .photo-thumb img{width:100%;height:100%;object-fit:cover}

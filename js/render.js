@@ -134,7 +134,7 @@ function tabInfo(b) {
             return `<div class="photo-thumb"><img src="${src}" style="cursor:zoom-in" onclick="openLightbox(window._bikeSrcs[${i}])"><div class="photo-date-badge" onclick="editPhotoDate(${i})" title="Datum bearbeiten">${(typeof f === 'string' ? '' : f.datum) || '–'} ✎</div><div class="photo-del" onclick="delPhoto(${i})">✕</div></div>`;
           })
           .join('')}</div>`
-      : `<div class="photo-upload-area" onclick="document.getElementById('file-photo').click()">Fotos hinzufügen</div>`;
+      : `<div class="photo-upload-area" onclick="document.getElementById('file-photo').click()">Fotos ablegen oder klicken</div>`;
   const fieldsHtml = em
     ? state.infoDefs
         .map(
@@ -161,7 +161,7 @@ function tabInfo(b) {
     ${em ? `<div style="margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="addInfoField()">+ Neues Feld</button></div>` : ''}
   </div>
   <div class="section"><div class="section-header"><div class="section-title">Fotos</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-photo').click()">+ Foto</button></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px">
+    <div class="photo-drop-zone" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="if(!event.relatedTarget||!this.contains(event.relatedTarget))this.classList.remove('drag-over')" ondrop="dropPhotos(event)">
       ${fotosHtml}
       <div style="margin-top:11px"><button class="btn btn-secondary btn-sm" onclick="exportCsv('${b.id}')">📄 CSV Export</button></div>
     </div>

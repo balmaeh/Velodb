@@ -707,16 +707,17 @@ function goToSnap(bId, date) {
 // PHOTOS
 // ================================================================
 
-function handlePhotos(e) {
-  const files = Array.from(e.target.files);
+function processPhotoFiles(files) {
   if (!files.length || !bikeId) return;
   const b = getBike(bikeId);
   let pending = files.length;
+  let exifFound = false;
   files.forEach(file => {
     const r = new FileReader();
     r.onload = ev => {
       const buf = ev.target.result;
       const exifDate = readExifDate(buf);
+      if (exifDate) exifFound = true;
       const lmDate = new Date(file.lastModified).toISOString().slice(0, 10);
       const datum = exifDate || lmDate;
       const blob = new Blob([buf], { type: file.type || 'image/jpeg' });
@@ -746,7 +747,7 @@ function handlePhotos(e) {
           if (tab === 'info') switchTab('info');
           if (tab === 'zeitstrahl') switchTab('zeitstrahl');
           showToast(
-            `${files.length} Foto${files.length > 1 ? 's' : ''} hinzugefügt${exifDate ? ' (Datum aus EXIF)' : ' (Datum aus Datei)'}`
+            `${files.length} Foto${files.length > 1 ? 's' : ''} hinzugefügt${exifFound ? ' (Datum aus EXIF)' : ' (Datum aus Datei)'}`
           );
         }
       };
@@ -758,7 +759,18 @@ function handlePhotos(e) {
     };
     r.readAsArrayBuffer(file);
   });
+}
+
+function handlePhotos(e) {
+  processPhotoFiles(Array.from(e.target.files));
   e.target.value = '';
+}
+
+function dropPhotos(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  processPhotoFiles(files);
 }
 
 function delPhoto(i) {
