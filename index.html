@@ -1565,12 +1565,24 @@ function _infoReadVal(b,field){
   const def=state.infoDefs?.find(d=>d.id===field);
   return def&&!def.isStandard?((b.infoVals||{})[field]||''):(b[field]||'');
 }
+function infoFieldSuggestions(field){
+  const def=state.infoDefs?.find(d=>d.id===field);
+  const vals=new Set();
+  state.bikes.forEach(b=>{
+    const v=def&&!def.isStandard?((b.infoVals||{})[field]||''):(b[field]||'');
+    if(v)vals.add(v);
+  });
+  return[...vals].sort((a,b)=>a.localeCompare(b,'de'));
+}
 function openInfoEdit(field,label,type){
   _infoEditField=field;const b=getBike(bikeId);
   const val=_infoReadVal(b,field);
+  const sugg=type==='text'?infoFieldSuggestions(field):[];
+  const dl=sugg.length?`<datalist id="info-dl">${sugg.map(s=>`<option value="${esc(s)}">`).join('')}</datalist>`:'';
+  const listAttr=sugg.length?' list="info-dl"':'';
   showModal('info-modal',`
     <div class="modal-header"><div><div class="modal-title">${esc(label)}</div></div><button class="btn btn-ghost btn-sm" onclick="closeModal('info-modal')">✕</button></div>
-    <div class="modal-body"><div class="form-group"><label class="form-label">${esc(label)}</label><input class="form-input" id="info-inp" type="${type||'text'}" value="${esc(val)}" onkeydown="if(event.key==='Enter')saveInfoField()"></div></div>
+    <div class="modal-body"><div class="form-group"><label class="form-label">${esc(label)}</label>${dl}<input class="form-input" id="info-inp" type="${type||'text'}"${listAttr} value="${esc(val)}" onkeydown="if(event.key==='Enter')saveInfoField()"></div></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('info-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveInfoField()">Speichern</button></div>`);
   setTimeout(()=>{const el=document.getElementById('info-inp');if(el){el.focus();el.select();}},50);
 }
